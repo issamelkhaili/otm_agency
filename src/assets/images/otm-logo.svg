@@ -1,0 +1,8 @@
+<svg width="200" height="100" viewBox="0 0 200 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M50 20C36.7 20 26 30.7 26 44C26 57.3 36.7 68 50 68C63.3 68 74 57.3 74 44C74 30.7 63.3 20 50 20ZM50 60C41.2 60 34 52.8 34 44C34 35.2 41.2 28 50 28C58.8 28 66 35.2 66 44C66 52.8 58.8 60 50 60Z" fill="#182652"/>
+  <path d="M98 20H82V68H98V20Z" fill="#182652"/>
+  <path d="M126 20H110V28H126V20Z" fill="#182652"/>
+  <path d="M126 20L140 68H150L164 20H152L144 50L136 20H126Z" fill="#182652"/>
+  <path d="M50 80H60V88H80V80H90V88H110V80H120V96H50V80Z" fill="#182652"/>
+  <text x="99" y="112" font-family="Arial" font-size="12" text-anchor="middle" fill="#182652">AGENCY</text>
+</svg>
