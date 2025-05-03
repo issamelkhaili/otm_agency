@@ -2,6 +2,15 @@
 
 Website for OTM Education, providing services for international students in France.
 
+## Project Structure
+
+This is a static website with a simple Express server for Heroku deployment:
+
+- `index.html` - Main website content
+- `assets/` - Static assets (CSS, JavaScript, images)
+- `server.js` - Express server for deployment
+- `favicon.ico` - Basic favicon
+
 ## Favicon
 
 A basic favicon has been added to the website. To improve it:
@@ -11,7 +20,7 @@ A basic favicon has been added to the website. To improve it:
    - Upload your logo/icon
    - Download the generated favicon package
    - Replace the existing favicon.ico file
-   - Replace apple-touch-icon.png
+   - Replace apple-touch-icon.png (needs to be created)
 
 2. For a full favicon set with different sizes and formats:
    - Generate a complete set including:
@@ -26,4 +35,19 @@ A basic favicon has been added to the website. To improve it:
 
 ## Deployment
 
-This site is configured for deployment on Heroku using a simple Express server. 
+This site is configured for deployment on Heroku:
+
+1. The Express server (server.js) serves the static files
+2. Procfile tells Heroku how to run the application
+3. package.json defines the dependencies and Node.js version
+
+## Local Development
+
+To run the site locally:
+
+```bash
+npm install
+npm start
+```
+
+Then visit http://localhost:3000 in your browser. 
