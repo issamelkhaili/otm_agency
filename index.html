@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OTM Education - Accompagnement Étudiant en France</title>
+    <!-- Fix for horizontal scrolling -->
+    <style>
+        html, body {
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+    </style>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -13,7 +20,33 @@
         /* Typography & General */
         body {
             font-family: 'Poppins', sans-serif;
+        }
+        
+        /* Fix for horizontal scrolling issues */
+        .container {
+            max-width: 100%;
+        }
+        
+        img, svg, video, iframe {
+            max-width: 100%;
+        }
+        
+        /* Make sure slider doesn't overflow */
+        .slider {
             overflow-x: hidden;
+            max-width: 100vw;
+        }
+        
+        /* Fix for section scrollbars */
+        section {
+            overflow: visible !important;
+            height: auto !important;
+            max-height: none !important;
+        }
+        
+        /* Fix for any divs that might have unintended scrollbars */
+        .container > div {
+            overflow: visible;
         }
         
         /* Text Gradient Styles */
@@ -23,8 +56,16 @@
             color: transparent;
         }
         
-        .bg-gradient-to-r.from-yellow-400.to-yellow-300,
-        .bg-gradient-to-r.from-blue-400.to-blue-300,
+        .bg-gradient-to-r.from-yellow-400.to-yellow-300 {
+            background-size: 200% auto;
+            background-position: 0% center;
+        }
+        
+        .bg-gradient-to-r.from-blue-400.to-blue-300 {
+            background-size: 200% auto;
+            background-position: 0% center;
+        }
+        
         .bg-gradient-to-r.from-green-400.to-green-300 {
             background-size: 200% auto;
             background-position: 0% center;
@@ -53,13 +94,11 @@
             justify-content: center;
             text-align: center;
             z-index: 1;
-            pointer-events: none;
         }
         
         .slide.active {
             opacity: 1;
             z-index: 2;
-            pointer-events: auto;
         }
         
         .slide-content {
@@ -67,10 +106,7 @@
             padding: 2rem;
             opacity: 0;
             transform: translateY(20px);
-            transition: opacity 0.7s ease 0.3s, transform 0.7s ease 0.3s;
-            z-index: 10;
-            position: relative;
-            pointer-events: auto;
+            transition: opacity 0.7s ease, transform 0.7s ease;
         }
         
         .slide.active .slide-content {
@@ -169,11 +205,6 @@
             right: 20px;
         }
         
-        /* Progress Bar */
-        .slider-progress {
-            transition: width 0.3s linear;
-        }
-        
         /* Gallery Styles */
         .gallery-container {
             display: grid;
@@ -237,95 +268,23 @@
         .testimonial-card:hover {
             transform: translateY(-5px);
         }
-        
+
         /* FAQ Styles */
         .faq-answer {
             transition: max-height 0.5s ease, opacity 0.5s ease;
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
-        }
-        
-        .faq-question.active + .faq-answer {
-            max-height: 1000px;
-            opacity: 1;
-        }
-        
-        /* Navigation styles */
-        .nav-link .hover-underline {
-            display: block;
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 2px;
-            background-color: currentColor;
-            transition: width 0.3s ease;
-        }
-        
-        .nav-link:hover .hover-underline {
-            width: 50%;
-        }
-        
-        /* Fix mobile menu */
-        #mobile-menu {
-            transition: max-height 0.3s ease, opacity 0.3s ease;
-            max-height: 0;
-            overflow: hidden;
-            opacity: 0;
-        }
-        
-        #mobile-menu.active {
-            max-height: 500px;
-            opacity: 1;
         }
         
         /* Pulse animation for buttons */
         @keyframes pulse {
             0% {
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
             }
             70% {
-                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+                box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
             }
             100% {
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
             }
-        }
-        
-        .pulse-button {
-            animation: pulse 2s infinite;
-        }
-        
-        /* Back to top button */
-        #back-to-top {
-            transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
-        }
-        
-        #back-to-top.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        #back-to-top.invisible {
-            opacity: 0;
-            visibility: hidden;
-        }
-        
-        #back-to-top:hover {
-            transform: translateY(-5px);
-        }
-        
-        /* Fix category buttons */
-        .category-btn.active {
-            background-color: #EFF6FF;
-            color: #1E3A8A;
-        }
-        
-        /* Service filter system */
-        [data-category] {
-            transition: opacity 0.5s ease, transform 0.5s ease;
         }
         
         /* Responsive adjustments */
@@ -337,44 +296,6 @@
             .gallery-container {
                 grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             }
-            
-            .slide-content {
-                padding: 1rem;
-            }
-            
-            .slider-arrow {
-                width: 40px;
-                height: 40px;
-            }
-        }
-        
-        @media (max-width: 640px) {
-            .service-card {
-                transform: none !important;
-            }
-            
-            .slider-dot {
-                width: 8px;
-                height: 8px;
-            }
-            
-            .slider-dot.active {
-                width: 24px;
-            }
-        }
-        
-        .slide.transitioning {
-            pointer-events: none;
-        }
-        
-        .slide-image {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 1;
         }
     </style>
 </head>
@@ -389,122 +310,52 @@
         <i class="fas fa-arrow-up text-lg"></i>
     </button>
     <!-- Navigation -->
-    <nav class="bg-white shadow-md fixed w-full z-50 transition-all duration-300" id="main-nav">
+    <nav class="bg-white bg-opacity-95 backdrop-blur-md shadow-md fixed w-full z-50 transition-all duration-300" id="main-nav">
         <div class="container mx-auto px-6 md:px-12 py-3">
             <div class="flex justify-between items-center">
                 <div class="flex items-center">
-                    <div class="text-2xl font-bold text-blue-900 flex items-center">
-                        <div class="relative transform hover:scale-105 transition-transform duration-300">
-                            <svg class="h-12 w-auto" viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg" aria-labelledby="logo-title">
-                            <title id="logo-title">OTM Education Logo</title>
+                    <div class="text-2xl font-bold text-blue-900 transform transition-transform duration-300 hover:scale-105">
+                        <svg class="h-10 w-auto inline-block" viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M20 10C31.0457 10 40 18.9543 40 30C40 41.0457 31.0457 50 20 50C8.9543 50 0 41.0457 0 30C0 18.9543 8.9543 10 20 10Z" fill="#003f88"/>
                             <path d="M50 10C61.0457 10 70 18.9543 70 30C70 41.0457 61.0457 50 50 50C38.9543 50 30 41.0457 30 30C30 18.9543 38.9543 10 50 10Z" fill="#0077b6"/>
                             <path d="M80 10C91.0457 10 100 18.9543 100 30C100 41.0457 91.0457 50 80 50C68.9543 50 60 41.0457 60 30C60 18.9543 68.9543 10 80 10Z" fill="#00b4d8"/>
-                            <!-- O letter -->
-                            <path d="M20 26C17.7909 26 16 27.7909 16 30C16 32.2091 17.7909 34 20 34C22.2091 34 24 32.2091 24 30C24 27.7909 22.2091 26 20 26ZM13 30C13 26.134 16.134 23 20 23C23.866 23 27 26.134 27 30C27 33.866 23.866 37 20 37C16.134 37 13 33.866 13 30Z" fill="white"/>
-                            <!-- T letter -->
-                            <path d="M47 24H53V26H51V37H49V26H47V24Z" fill="white"/>
-                            <!-- M letter -->
-                            <path d="M74 37V24H76.5L80 32L83.5 24H86V37H84V27L80 35.5L76 27V37H74Z" fill="white"/>
+                            <text x="20" y="35" font-family="Arial" font-size="16" font-weight="bold" fill="white" text-anchor="middle">O</text>
+                            <text x="50" y="35" font-family="Arial" font-size="16" font-weight="bold" fill="white" text-anchor="middle">T</text>
+                            <text x="80" y="35" font-family="Arial" font-size="16" font-weight="bold" fill="white" text-anchor="middle">M</text>
                         </svg>
-                            <div class="absolute -bottom-1 -right-1 bg-yellow-500 rounded-full w-6 h-6 flex items-center justify-center text-xs text-blue-900 font-bold shadow-md">FR</div>
+                        <span class="ml-2 relative inline-block">
+                            Education
+                            <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
+                        </span>
                     </div>
-                        <span class="ml-3 text-transparent bg-clip-text bg-gradient-to-r from-blue-900 to-blue-600">Education</span>
                 </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#accueil" class="nav-link active text-blue-900 hover:text-blue-600 font-medium relative after:absolute after:bottom-[-5px] after:left-0 after:h-[2px] after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Accueil</a>
+                    <a href="#services" class="nav-link text-blue-900 hover:text-blue-600 font-medium relative after:absolute after:bottom-[-5px] after:left-0 after:h-[2px] after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Nos Services</a>
+                    <a href="#pourquoi" class="nav-link text-blue-900 hover:text-blue-600 font-medium relative after:absolute after:bottom-[-5px] after:left-0 after:h-[2px] after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Pourquoi OTM Education</a>
+                    <a href="#temoignages" class="nav-link text-blue-900 hover:text-blue-600 font-medium relative after:absolute after:bottom-[-5px] after:left-0 after:h-[2px] after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Témoignages</a>
+                    <a href="#galerie" class="nav-link text-blue-900 hover:text-blue-600 font-medium relative after:absolute after:bottom-[-5px] after:left-0 after:h-[2px] after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Galerie</a>
+                    <a href="#faq" class="nav-link text-blue-900 hover:text-blue-600 font-medium relative after:absolute after:bottom-[-5px] after:left-0 after:h-[2px] after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">FAQ</a>
+                    <a href="#apropos" class="nav-link text-blue-900 hover:text-blue-600 font-medium relative after:absolute after:bottom-[-5px] after:left-0 after:h-[2px] after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">À Propos</a>
+                    <a href="#contact" class="nav-link text-blue-900 hover:text-blue-600 font-medium relative after:absolute after:bottom-[-5px] after:left-0 after:h-[2px] after:w-0 after:bg-blue-500 after:transition-all hover:after:w-full">Contact</a>
                 </div>
-                <div class="hidden md:flex space-x-1 items-center">
-                    <a href="#accueil" class="nav-link px-4 py-2 rounded-full text-blue-900 hover:text-blue-600 hover:bg-blue-50 font-medium transition-all duration-300 relative group">
-                        Accueil
-                        <span class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-1/2"></span>
-                    </a>
-                    <a href="#services" class="nav-link px-4 py-2 rounded-full text-blue-900 hover:text-blue-600 hover:bg-blue-50 font-medium transition-all duration-300 relative group">
-                        Nos Services
-                        <span class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-1/2"></span>
-                    </a>
-                    <a href="#pourquoi" class="nav-link px-4 py-2 rounded-full text-blue-900 hover:text-blue-600 hover:bg-blue-50 font-medium transition-all duration-300 relative group">
-                        Pourquoi OTM
-                        <span class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-1/2"></span>
-                    </a>
-                    <a href="#temoignages" class="nav-link px-4 py-2 rounded-full text-blue-900 hover:text-blue-600 hover:bg-blue-50 font-medium transition-all duration-300 relative group">
-                        Témoignages
-                        <span class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-1/2"></span>
-                    </a>
-                    <a href="#galerie" class="nav-link px-4 py-2 rounded-full text-blue-900 hover:text-blue-600 hover:bg-blue-50 font-medium transition-all duration-300 relative group">
-                        Galerie
-                        <span class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-1/2"></span>
-                    </a>
-                    <a href="#faq" class="nav-link px-4 py-2 rounded-full text-blue-900 hover:text-blue-600 hover:bg-blue-50 font-medium transition-all duration-300 relative group">
-                        FAQ
-                        <span class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-1/2"></span>
-                    </a>
-                    <a href="#apropos" class="nav-link px-4 py-2 rounded-full text-blue-900 hover:text-blue-600 hover:bg-blue-50 font-medium transition-all duration-300 relative group">
-                        À Propos
-                        <span class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-1/2"></span>
-                    </a>
-                    <a href="#contact" class="ml-2 bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700 text-white font-medium px-6 py-2 rounded-full transition duration-300 transform hover:scale-105 shadow-md flex items-center">
-                        <span>Contact</span>
-                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                        </svg>
-                    </a>
-                </div>
-                <div class="md:hidden flex items-center">
-                    <a href="#contact" class="mr-4 bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700 text-white font-medium px-5 py-2 rounded-full transition duration-300 transform hover:scale-105 shadow-md">
-                        Contact
-                    </a>
-                    <button id="menu-toggle" class="focus:outline-none bg-blue-50 p-2 rounded-lg hover:bg-blue-100 transition-colors duration-300" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-menu">
-                        <svg id="menu-open-icon" class="h-6 w-6 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <div class="md:hidden">
+                    <button id="menu-toggle" class="focus:outline-none transition-transform duration-300 hover:scale-110">
+                        <svg class="h-6 w-6 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                        <svg id="menu-close-icon" class="h-6 w-6 text-blue-900 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
                 </div>
             </div>
-            <div id="mobile-menu" class="md:hidden hidden mt-4 pb-4 bg-white rounded-lg shadow-inner">
-                <div class="space-y-1 px-2 pt-2 pb-3">
-                    <a href="#accueil" class="block px-4 py-2 text-blue-900 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-all duration-300">
-                        <i class="fas fa-home mr-2 text-blue-600 w-5 text-center"></i>Accueil
-                    </a>
-                    <a href="#services" class="block px-4 py-2 text-blue-900 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-all duration-300">
-                        <i class="fas fa-briefcase mr-2 text-blue-600 w-5 text-center"></i>Nos Services
-                    </a>
-                    <a href="#pourquoi" class="block px-4 py-2 text-blue-900 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-all duration-300">
-                        <i class="fas fa-check-circle mr-2 text-blue-600 w-5 text-center"></i>Pourquoi OTM
-                    </a>
-                    <a href="#temoignages" class="block px-4 py-2 text-blue-900 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-all duration-300">
-                        <i class="fas fa-quote-left mr-2 text-blue-600 w-5 text-center"></i>Témoignages
-                    </a>
-                    <a href="#galerie" class="block px-4 py-2 text-blue-900 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-all duration-300">
-                        <i class="fas fa-images mr-2 text-blue-600 w-5 text-center"></i>Galerie
-                    </a>
-                    <a href="#faq" class="block px-4 py-2 text-blue-900 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-all duration-300">
-                        <i class="fas fa-question-circle mr-2 text-blue-600 w-5 text-center"></i>FAQ
-                    </a>
-                    <a href="#apropos" class="block px-4 py-2 text-blue-900 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-all duration-300">
-                        <i class="fas fa-info-circle mr-2 text-blue-600 w-5 text-center"></i>À Propos
-                    </a>
-                </div>
-                <div class="mt-4 pt-4 border-t border-gray-100">
-                    <div class="flex items-center px-4 py-2">
-                        <a href="tel:+33123456789" class="flex items-center text-gray-700 hover:text-blue-600 transition-colors duration-300 mr-6">
-                            <i class="fas fa-phone-alt text-blue-600 mr-2"></i>
-                            <span>+33 1 23 45 67 89</span>
-                        </a>
-                        <div class="flex space-x-3">
-                            <a href="#" class="text-gray-500 hover:text-blue-600 transition-colors duration-300">
-                                <i class="fab fa-facebook-f"></i>
-                            </a>
-                            <a href="#" class="text-gray-500 hover:text-blue-600 transition-colors duration-300">
-                                <i class="fab fa-twitter"></i>
-                            </a>
-                            <a href="#" class="text-gray-500 hover:text-blue-600 transition-colors duration-300">
-                                <i class="fab fa-instagram"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
+            <div id="mobile-menu" class="md:hidden hidden mt-4 pb-4">
+                <a href="#accueil" class="block py-2 text-blue-900 hover:text-blue-600 hover:translate-x-2 transition-transform duration-300 font-medium">Accueil</a>
+                <a href="#services" class="block py-2 text-blue-900 hover:text-blue-600 hover:translate-x-2 transition-transform duration-300 font-medium">Nos Services</a>
+                <a href="#pourquoi" class="block py-2 text-blue-900 hover:text-blue-600 hover:translate-x-2 transition-transform duration-300 font-medium">Pourquoi OTM Education</a>
+                <a href="#temoignages" class="block py-2 text-blue-900 hover:text-blue-600 hover:translate-x-2 transition-transform duration-300 font-medium">Témoignages</a>
+                <a href="#galerie" class="block py-2 text-blue-900 hover:text-blue-600 hover:translate-x-2 transition-transform duration-300 font-medium">Galerie</a>
+                <a href="#faq" class="block py-2 text-blue-900 hover:text-blue-600 hover:translate-x-2 transition-transform duration-300 font-medium">FAQ</a>
+                <a href="#apropos" class="block py-2 text-blue-900 hover:text-blue-600 hover:translate-x-2 transition-transform duration-300 font-medium">À Propos</a>
+                <a href="#contact" class="block py-2 text-blue-900 hover:text-blue-600 hover:translate-x-2 transition-transform duration-300 font-medium">Contact</a>
             </div>
         </div>
     </nav>
@@ -517,12 +368,12 @@
                 <div class="absolute inset-0 bg-gradient-to-b from-black/60 to-black/80 z-10"></div>
                 <img src="assets/images/hero-slide1.jpg" alt="Bienvenue chez OTM Education" class="absolute inset-0 w-full h-full object-cover transform scale-100 transition-transform duration-5000 ease-out slide-image">
                 <div class="slide-content relative z-20 h-full flex flex-col items-center justify-center text-center px-6 md:px-12">
-                    <span class="text-yellow-400 bg-yellow-900/30 px-4 py-1 rounded-full text-sm uppercase tracking-wider mb-4 backdrop-blur-sm">Votre Avenir Académique</span>
-                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 transition-all duration-700 translate-y-0 opacity-100">Bienvenue chez <span class="text-gradient bg-gradient-to-r from-yellow-400 to-yellow-300">OTM Education</span></h1>
-                    <h2 class="text-2xl md:text-3xl text-yellow-400 mb-6 transition-all duration-700 translate-y-0 opacity-100">Avenir Étudiant France</h2>
+                    <span class="text-blue-300 bg-blue-900/30 px-4 py-1 rounded-full text-sm uppercase tracking-wider mb-4 backdrop-blur-sm">Votre Avenir Académique</span>
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 transition-all duration-700 translate-y-0 opacity-100">Bienvenue chez <span class="text-gradient bg-gradient-to-r from-blue-400 to-blue-300">OTM Education</span></h1>
+                    <h2 class="text-2xl md:text-3xl text-blue-300 mb-6 transition-all duration-700 translate-y-0 opacity-100">Avenir Étudiant France</h2>
                     <p class="text-xl text-white mb-8 max-w-2xl transition-all duration-700 translate-y-0 opacity-100 backdrop-blur-sm bg-black/20 px-4 py-2 rounded-lg">Ensemble, construisons ton avenir académique en France avec notre expertise et notre réseau d'établissements partenaires.</p>
                     <div class="flex flex-col sm:flex-row justify-center gap-4 transition-all duration-700 translate-y-0 opacity-100">
-                        <a href="#contact" class="bg-yellow-500 hover:bg-yellow-600 text-blue-900 font-bold py-4 px-8 rounded-full transition duration-300 transform hover:scale-105 pulse-button flex items-center">
+                        <a href="#contact" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-full transition duration-300 transform hover:scale-105 pulse-button flex items-center">
                             <span class="mr-2">Prendre Contact</span>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
@@ -543,18 +394,18 @@
                 <div class="absolute inset-0 bg-gradient-to-b from-black/60 to-black/80 z-10"></div>
                 <img src="assets/images/hero-slide2.jpg" alt="Réussissez en France" class="absolute inset-0 w-full h-full object-cover transform scale-100 transition-transform duration-5000 ease-out slide-image">
                 <div class="slide-content relative z-20 h-full flex flex-col items-center justify-center text-center px-6 md:px-12">
-                    <span class="text-blue-300 bg-blue-900/30 px-4 py-1 rounded-full text-sm uppercase tracking-wider mb-4 backdrop-blur-sm">Excellence Académique</span>
-                    <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 transition-all duration-700 translate-y-0 opacity-100">Réussissez en <span class="text-gradient bg-gradient-to-r from-blue-400 to-blue-300">France</span></h1>
-                    <h2 class="text-2xl text-blue-300 mb-6 transition-all duration-700 translate-y-0 opacity-100">Expertise et Accompagnement</h2>
+                    <span class="text-yellow-400 bg-yellow-900/30 px-4 py-1 rounded-full text-sm uppercase tracking-wider mb-4 backdrop-blur-sm">Excellence Académique</span>
+                    <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 transition-all duration-700 translate-y-0 opacity-100">Réussissez en <span class="text-gradient bg-gradient-to-r from-yellow-400 to-yellow-300">France</span></h1>
+                    <h2 class="text-2xl text-yellow-400 mb-6 transition-all duration-700 translate-y-0 opacity-100">Expertise et Accompagnement</h2>
                     <p class="text-xl text-white mb-8 max-w-2xl transition-all duration-700 translate-y-0 opacity-100 backdrop-blur-sm bg-black/20 px-4 py-2 rounded-lg">Notre équipe d'experts vous guide vers les meilleures opportunités académiques adaptées à votre profil et vos ambitions.</p>
                     <div class="flex flex-col sm:flex-row justify-center gap-4 transition-all duration-700 translate-y-0 opacity-100">
-                        <a href="#contact" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-8 rounded-full transition duration-300 transform hover:scale-105 pulse-button flex items-center">
+                        <a href="#contact" class="bg-yellow-500 hover:bg-yellow-600 text-blue-900 font-bold py-4 px-8 rounded-full transition duration-300 transform hover:scale-105 pulse-button flex items-center">
                             <span class="mr-2">Prendre Contact</span>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
                             </svg>
                         </a>
-                        <a href="#pourquoi" class="bg-transparent hover:bg-white text-white hover:text-blue-700 border-2 border-white font-bold py-4 px-8 rounded-full transition duration-300 transform hover:scale-105 group">
+                        <a href="#pourquoi" class="bg-transparent hover:bg-white text-white hover:text-yellow-700 border-2 border-white font-bold py-4 px-8 rounded-full transition duration-300 transform hover:scale-105 group">
                             <span class="group-hover:mr-2">Pourquoi OTM Education</span>
                             <svg class="w-4 h-4 inline-block opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-0 group-hover:ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -628,35 +479,6 @@
                 <div class="w-20 h-1 bg-yellow-500 mx-auto mt-6"></div>
             </div>
             
-            <!-- Services Categories Navigation -->
-            <div class="mt-2 mb-12 flex flex-wrap justify-center gap-4" data-aos="fade-up">
-                <a href="#" class="category-btn px-6 py-3 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-full font-medium transition-colors duration-300 flex items-center" data-category="all">
-                    <span class="w-3 h-3 bg-blue-600 rounded-full mr-2"></span>
-                    <span>Tous les services</span>
-                    <span class="ml-2 bg-white text-blue-800 text-xs font-bold px-2 py-1 rounded-full">6</span>
-                </a>
-                <a href="#" class="category-btn px-6 py-3 bg-white hover:bg-blue-50 text-gray-700 hover:text-blue-700 rounded-full font-medium transition-colors duration-300 border border-gray-200 flex items-center" data-category="admission">
-                    <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-                    <span>Admission</span>
-                    <span class="ml-2 bg-green-50 text-green-800 text-xs font-bold px-2 py-1 rounded-full">3</span>
-                </a>
-                <a href="#" class="category-btn px-6 py-3 bg-white hover:bg-blue-50 text-gray-700 hover:text-blue-700 rounded-full font-medium transition-colors duration-300 border border-gray-200 flex items-center" data-category="visa">
-                    <span class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></span>
-                    <span>Visa</span>
-                    <span class="ml-2 bg-yellow-50 text-yellow-800 text-xs font-bold px-2 py-1 rounded-full">1</span>
-                </a>
-                <a href="#" class="category-btn px-6 py-3 bg-white hover:bg-blue-50 text-gray-700 hover:text-blue-700 rounded-full font-medium transition-colors duration-300 border border-gray-200 flex items-center" data-category="logement">
-                    <span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
-                    <span>Logement</span>
-                    <span class="ml-2 bg-red-50 text-red-800 text-xs font-bold px-2 py-1 rounded-full">1</span>
-                </a>
-                <a href="#" class="category-btn px-6 py-3 bg-white hover:bg-blue-50 text-gray-700 hover:text-blue-700 rounded-full font-medium transition-colors duration-300 border border-gray-200 flex items-center" data-category="integration">
-                    <span class="w-3 h-3 bg-purple-500 rounded-full mr-2"></span>
-                    <span>Intégration</span>
-                    <span class="ml-2 bg-purple-50 text-purple-800 text-xs font-bold px-2 py-1 rounded-full">1</span>
-                </a>
-            </div>
-            
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <!-- Service 1 -->
                 <div class="service-card bg-white rounded-xl overflow-hidden shadow-lg border border-gray-100 hover:border-blue-200 group transition-all duration-300 transform hover:-translate-y-2" data-aos="fade-up" data-aos-delay="100" data-category="admission">
@@ -686,7 +508,7 @@
                         <div class="absolute top-6 right-6 w-3 h-3 bg-green-500 rounded-full"></div>
                         <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-full w-16 h-16 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 relative z-10">
                             <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                         </svg>
                     </div>
                     </div>
@@ -867,7 +689,7 @@
                 </div>
                 <div class="order-1 md:order-2" data-aos="fade-left">
                     <div class="relative">
-                        <img src="assets/images/campus-france.jpg" alt="Campus universitaire français" class="rounded-lg shadow-xl w-full h-auto" loading="lazy" />
+                        <img src="assets/images/campus-france.jpg" alt="Campus universitaire français" class="rounded-lg shadow-xl w-full h-auto" />
                         <div class="absolute -bottom-6 -right-6 bg-yellow-500 p-4 rounded-lg shadow-lg transform rotate-3 hidden md:block">
                             <p class="text-blue-900 font-bold">+1500 étudiants accompagnés</p>
                         </div>
@@ -892,7 +714,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-5">
                         <div class="md:col-span-2 relative h-64 md:h-full">
                             <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-800 opacity-90"></div>
-                            <img src="assets/images/testimonial-sophie.jpg" alt="Sophie Kamga" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay" loading="lazy">
+                            <img src="assets/images/testimonial-sophie.jpg" alt="Sophie Kamga" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay">
                             <div class="absolute inset-0 flex flex-col justify-end p-8 text-white">
                                 <div class="bg-blue-900 bg-opacity-70 p-4 rounded-lg backdrop-blur-sm inline-block">
                                     <h3 class="text-xl font-semibold">Sophie Kamga</h3>
@@ -931,7 +753,7 @@
                         <div class="p-6">
                         <div class="flex items-center mb-4">
                                 <div class="w-12 h-12 rounded-full overflow-hidden mr-4 border-2 border-blue-100">
-                                    <img src="assets/images/testimonial-mohamed.jpg" alt="Mohamed El Amrani" class="w-full h-full object-cover" loading="lazy">
+                                    <img src="assets/images/testimonial-mohamed.jpg" alt="Mohamed El Amrani" class="w-full h-full object-cover">
                             </div>
                             <div>
                                     <h3 class="font-semibold text-gray-900">Mohamed El Amrani</h3>
@@ -959,7 +781,7 @@
                         <div class="p-6">
                         <div class="flex items-center mb-4">
                                 <div class="w-12 h-12 rounded-full overflow-hidden mr-4 border-2 border-blue-100">
-                                    <img src="assets/images/testimonial-ana.jpg" alt="Ana Sanchez" class="w-full h-full object-cover" loading="lazy">
+                                    <img src="assets/images/testimonial-ana.jpg" alt="Ana Sanchez" class="w-full h-full object-cover">
                             </div>
                             <div>
                                     <h3 class="font-semibold text-gray-900">Ana Sanchez</h3>
@@ -1000,7 +822,7 @@
                                 <p class="text-sm text-blue-200">Étudiante Marocaine à Sciences Po Paris</p>
                     </div>
                 </div>
-                        <img src="assets/images/testimonial-video-thumbnail.jpg" alt="Témoignage vidéo" class="w-full h-full object-cover opacity-40" loading="lazy">
+                        <img src="assets/images/testimonial-video-thumbnail.jpg" alt="Témoignage vidéo" class="w-full h-full object-cover opacity-40">
                     </div>
                 </div>
 
@@ -1037,7 +859,7 @@
             <div class="gallery-container">
                 <!-- Gallery Item 1 -->
                 <div class="gallery-item" data-aos="zoom-in" data-aos-delay="100">
-                    <img src="assets/images/gallery-campus.jpg" alt="Vie étudiante en France" loading="lazy" />
+                    <img src="assets/images/gallery-campus.jpg" alt="Vie étudiante en France" />
                     <div class="gallery-overlay">
                         <h3 class="text-white font-medium">Campus universitaire</h3>
                         <p class="text-gray-300 text-sm">La beauté des campus français</p>
@@ -1046,7 +868,7 @@
                 
                 <!-- Gallery Item 2 -->
                 <div class="gallery-item" data-aos="zoom-in" data-aos-delay="200">
-                    <img src="assets/images/gallery-paris.jpg" alt="Étudiants internationaux à Paris" loading="lazy" />
+                    <img src="assets/images/gallery-paris.jpg" alt="Étudiants internationaux à Paris" />
                     <div class="gallery-overlay">
                         <h3 class="text-white font-medium">Étudiants à Paris</h3>
                         <p class="text-gray-300 text-sm">Exploration de la ville lumière</p>
@@ -1055,7 +877,7 @@
                 
                 <!-- Gallery Item 5 -->
                 <div class="gallery-item" data-aos="zoom-in" data-aos-delay="300">
-                    <img src="assets/images/gallery-leisure.jpg" alt="Étudiants internationaux à Paris" loading="lazy" />
+                    <img src="assets/images/gallery-leisure.jpg" alt="Étudiants internationaux à Paris" />
                     <div class="gallery-overlay">
                         <h3 class="text-white font-medium">Loisirs à Paris</h3>
                         <p class="text-gray-300 text-sm">Découvrir la culture française</p>
@@ -1064,7 +886,7 @@
                 
                 <!-- Gallery Item 6 -->
                 <div class="gallery-item" data-aos="zoom-in" data-aos-delay="400">
-                    <img src="assets/images/gallery-architecture.jpg" alt="Campus universitaire en France" loading="lazy" />
+                    <img src="assets/images/gallery-architecture.jpg" alt="Campus universitaire en France" />
                     <div class="gallery-overlay">
                         <h3 class="text-white font-medium">Architecture française</h3>
                         <p class="text-gray-300 text-sm">L'élégance des universités</p>
@@ -1075,45 +897,48 @@
     </section>
 
     <!-- FAQ Section -->
-    <section id="faq" class="py-16 bg-blue-50">
+    <section id="faq" class="py-20 bg-white">
         <div class="container mx-auto px-6 md:px-12">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold text-blue-900 mb-4" data-aos="fade-up">Questions Fréquentes</h2>
-                <p class="text-gray-600 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="100">Trouvez réponse à vos questions sur le processus d'études en France</p>
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-3xl md:text-4xl font-bold text-blue-900 mb-4">Questions Fréquentes</h2>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Trouvez réponse à vos questions sur le processus d'études en France</p>
             </div>
-            
-            <div class="max-w-3xl mx-auto space-y-4" data-aos="fade-up" data-aos-delay="200">
+            <div class="max-w-3xl mx-auto space-y-6">
                 <!-- FAQ Item 1 -->
-                <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                    <button class="faq-question w-full flex justify-between items-center p-5 text-left" 
-                            aria-expanded="false" 
-                            aria-controls="faq-answer-1">
-                        <span class="font-medium text-lg text-blue-900">Comment choisir le bon programme d'études en France ?</span>
-                        <svg class="faq-icon w-5 h-5 text-blue-600 transform transition-transform duration-300 rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </button>
-                    <div id="faq-answer-1" class="faq-answer px-5 pb-5" role="region" hidden>
-                        <p class="text-gray-600">Le choix du programme dépend de plusieurs facteurs: vos intérêts académiques, votre parcours précédent, vos objectifs professionnels et votre niveau de français. Chez OTM Education, nous vous accompagnons dans cette décision grâce à une analyse personnalisée de votre profil et des opportunités disponibles. Nous prenons en compte les classements des établissements, leur reconnaissance internationale et les spécialités qui correspondent le mieux à vos aspirations.</p>
+                <div class="faq-item bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300" data-aos="fade-up" data-aos-delay="100">
+                    <button class="faq-question w-full bg-white px-6 py-5 text-left flex justify-between items-center focus:outline-none group">
+                        <span class="font-semibold text-blue-900 text-lg group-hover:text-blue-700 transition-colors duration-300">Comment choisir le bon programme d'études en France ?</span>
+                        <div class="faq-icon text-blue-900 transition-transform duration-500 transform rotate-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                        </button>
+                    <div class="faq-answer px-6 pb-5 max-h-0 overflow-hidden transition-all duration-500 ease-in-out opacity-0">
+                        <div class="pt-4 border-t border-gray-200">
+                            <p class="text-gray-600">Le choix du programme dépend de plusieurs facteurs: vos intérêts académiques, votre parcours précédent, vos objectifs professionnels et votre niveau de français. Chez OTM Education, nous vous accompagnons dans cette décision grâce à une analyse personnalisée de votre profil et des opportunités disponibles. Nous prenons en compte les classements des établissements, leur reconnaissance internationale et les spécialités qui correspondent le mieux à vos aspirations.</p>
+                        </div>
+                        </div>
                     </div>
-                </div>
-                
-                <!-- FAQ Item 2 -->
-                <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                    <button class="faq-question w-full flex justify-between items-center p-5 text-left" 
-                            aria-expanded="false" 
-                            aria-controls="faq-answer-2">
-                        <span class="font-medium text-lg text-blue-900">Quels sont les documents nécessaires pour une demande de visa étudiant ?</span>
-                        <svg class="faq-icon w-5 h-5 text-blue-600 transform transition-transform duration-300 rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </button>
-                    <div id="faq-answer-2" class="faq-answer px-5 pb-5" role="region" hidden>
-                        <p class="text-gray-600">Pour une demande de visa étudiant, vous aurez généralement besoin des documents suivants: passeport valide, lettre d'acceptation d'un établissement français, justificatifs de ressources financières, attestation d'assurance, justificatif d'hébergement en France, et selon votre pays d'origine, une attestation de niveau de français. Notre équipe vous fournit une liste personnalisée et vous assiste dans la préparation de chaque document pour optimiser vos chances d'obtention du visa.</p>
+                    
+                    <!-- FAQ Item 2 -->
+                <div class="faq-item bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300" data-aos="fade-up" data-aos-delay="200">
+                    <button class="faq-question w-full bg-white px-6 py-5 text-left flex justify-between items-center focus:outline-none group">
+                        <span class="font-semibold text-blue-900 text-lg group-hover:text-blue-700 transition-colors duration-300">Quels sont les documents nécessaires pour une demande de visa étudiant ?</span>
+                        <div class="faq-icon text-blue-900 transition-transform duration-500 transform rotate-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                        </button>
+                    <div class="faq-answer px-6 pb-5 max-h-0 overflow-hidden transition-all duration-500 ease-in-out opacity-0">
+                        <div class="pt-4 border-t border-gray-200">
+                            <p class="text-gray-600">Pour une demande de visa étudiant, vous aurez généralement besoin des documents suivants: passeport valide, lettre d'acceptation d'un établissement français, justificatifs de ressources financières, attestation d'assurance, justificatif d'hébergement en France, et selon votre pays d'origine, une attestation de niveau de français. Notre équipe vous fournit une liste personnalisée et vous assiste dans la préparation de chaque document pour optimiser vos chances d'obtention du visa.</p>
+                        </div>
+                        </div>
                     </div>
-                </div>
-                
-                <!-- FAQ Item 3 -->
+                    
+                    <!-- FAQ Item 3 -->
                 <div class="faq-item bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300" data-aos="fade-up" data-aos-delay="300">
                     <button class="faq-question w-full bg-white px-6 py-5 text-left flex justify-between items-center focus:outline-none group">
                         <span class="font-semibold text-blue-900 text-lg group-hover:text-blue-700 transition-colors duration-300">Comment trouver un logement étudiant abordable en France ?</span>
@@ -1350,48 +1175,43 @@
                     <form id="contact-form" class="space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label for="first-name" class="block text-sm font-medium text-gray-700 mb-1">Prénom*</label>
-                                <input id="first-name" type="text" name="first-name" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" placeholder="Votre prénom" required aria-required="true">
+                                <label for="nom" class="block text-gray-700 font-medium mb-2">Nom*</label>
+                                <input type="text" id="nom" name="nom" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div>
-                                <label for="last-name" class="block text-sm font-medium text-gray-700 mb-1">Nom*</label>
-                                <input id="last-name" type="text" name="last-name" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" placeholder="Votre nom" required aria-required="true">
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email*</label>
-                                <input id="email" type="email" name="email" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" placeholder="Votre email" required aria-required="true">
-                            </div>
-                            <div>
-                                <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
-                                <input id="phone" type="tel" name="phone" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" placeholder="Votre téléphone">
+                                <label for="prenom" class="block text-gray-700 font-medium mb-2">Prénom*</label>
+                                <input type="text" id="prenom" name="prenom" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
                         </div>
                         <div>
-                            <label for="subject" class="block text-sm font-medium text-gray-700 mb-1">Sujet*</label>
-                            <select id="subject" name="subject" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" required aria-required="true">
-                                <option value="" disabled selected>Sélectionnez un sujet</option>
-                                <option value="admission">Admission</option>
-                                <option value="visa">Visa</option>
-                                <option value="logement">Logement</option>
+                            <label for="email" class="block text-gray-700 font-medium mb-2">Email*</label>
+                            <input type="email" id="email" name="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="telephone" class="block text-gray-700 font-medium mb-2">Téléphone</label>
+                            <input type="tel" id="telephone" name="telephone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="sujet" class="block text-gray-700 font-medium mb-2">Sujet*</label>
+                            <select id="sujet" name="sujet" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Sélectionnez un sujet</option>
+                                <option value="orientation">Orientation académique</option>
+                                <option value="admission">Processus d'admission</option>
+                                <option value="visa">Demande de visa</option>
+                                <option value="logement">Recherche de logement</option>
                                 <option value="autre">Autre</option>
                             </select>
                         </div>
                         <div>
-                            <label for="message" class="block text-sm font-medium text-gray-700 mb-1">Message*</label>
-                            <textarea id="message" name="message" rows="4" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200" placeholder="Votre message" required aria-required="true"></textarea>
+                            <label for="message" class="block text-gray-700 font-medium mb-2">Message*</label>
+                            <textarea id="message" name="message" rows="5" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                         </div>
                         <div class="flex items-start">
-                            <div class="flex items-center h-5">
-                                <input id="privacy-policy" type="checkbox" name="privacy-policy" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" required aria-required="true">
-                            </div>
-                            <div class="ml-3 text-sm">
-                                <label for="privacy-policy" class="font-medium text-gray-700">J'accepte que mes données soient traitées conformément à la politique de confidentialité*</label>
-                            </div>
+                            <input type="checkbox" id="privacy" name="privacy" required class="mt-1 mr-2">
+                            <label for="privacy" class="text-gray-600 text-sm">J'accepte que mes données soient traitées conformément à la politique de confidentialité*</label>
                         </div>
-                        <div>
-                            <button type="submit" class="w-full bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700 text-white font-medium py-3 px-6 rounded-lg transition duration-300 shadow-md transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">Envoyer</button>
+                        <div class="text-right">
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105">Envoyer</button>
                         </div>
                     </form>
                 </div>
@@ -1404,9 +1224,9 @@
         <div class="container mx-auto px-6 md:px-12 text-center">
             <h2 class="text-3xl md:text-4xl font-bold mb-6" data-aos="fade-up">Prêt à commencer votre aventure en France?</h2>
             <p class="text-xl mb-8 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="100">Rejoignez les milliers d'étudiants internationaux qui ont réussi leur parcours académique avec OTM Education</p>
-            <div class="flex flex-wrap justify-center gap-4" data-aos="fade-up" data-aos-delay="200">
-                <a href="#contact" class="bg-yellow-500 hover:bg-yellow-600 text-blue-900 font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105 pulse-button">Contactez-nous dès aujourd'hui</a>
-                <a href="#services" class="bg-transparent hover:bg-white text-white hover:text-blue-900 border-2 border-white font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105">Découvrir nos services</a>
+            <div data-aos="fade-up" data-aos-delay="200">
+                <a href="#contact" class="bg-yellow-500 hover:bg-yellow-600 text-blue-900 font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105 pulse-button mx-2 mb-4 inline-block">Contactez-nous dès aujourd'hui</a>
+                <a href="#services" class="bg-transparent hover:bg-white text-white hover:text-blue-900 border-2 border-white font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105 mx-2 mb-4 inline-block">Découvrir nos services</a>
             </div>
         </div>
     </section>
@@ -1486,40 +1306,34 @@
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script src="assets/js/main.js"></script>
     <script>
-        // Initialize AOS
+        // Initialize AOS with enhanced scroll behavior
+        AOS.init({
+            duration: 800,
+            once: false,
+            offset: 100,  // Makes elements animate 100px earlier
+            delay: 50,    // Small delay for smoother transitions
+            mirror: true, // Enables animations when scrolling back up
+            anchorPlacement: 'top-bottom'
+        });
+        
+        // Mobile menu toggle
         document.addEventListener('DOMContentLoaded', function() {
-            AOS.init({
-                duration: 800,
-                easing: 'ease',
-                once: true,
-                offset: 100
-            });
-            
-            // FAQ Accordion
-            const faqQuestions = document.querySelectorAll('.faq-question');
-            
-            faqQuestions.forEach(question => {
-                question.addEventListener('click', () => {
-                    const answer = question.nextElementSibling;
-                    const icon = question.querySelector('.faq-icon');
-                    
-                    // Toggle active state for the question
-                    question.classList.toggle('active');
-                    
-                    // Toggle rotation for icon
-                    if (icon.classList.contains('rotate-0')) {
-                        icon.classList.remove('rotate-0');
-                        icon.classList.add('rotate-180');
-                    } else {
-                        icon.classList.remove('rotate-180');
-                        icon.classList.add('rotate-0');
-                    }
-                });
-            });
-            
-            // Mobile menu toggle
             const menuToggle = document.getElementById('menu-toggle');
             const mobileMenu = document.getElementById('mobile-menu');
+            const mainNav = document.getElementById('main-nav');
+            
+            // Header scroll effect
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    mainNav.classList.add('py-1');
+                    mainNav.classList.remove('py-3');
+                    mainNav.classList.add('shadow-lg');
+                } else {
+                    mainNav.classList.remove('py-1');
+                    mainNav.classList.add('py-3');
+                    mainNav.classList.remove('shadow-lg');
+                }
+            });
             
             if (menuToggle && mobileMenu) {
                 menuToggle.addEventListener('click', () => {
@@ -1532,11 +1346,11 @@
             
             window.addEventListener('scroll', () => {
                 if (window.pageYOffset > 300) {
-                    backToTopButton.classList.remove('invisible');
-                    backToTopButton.classList.add('visible');
+                    backToTopButton.classList.remove('opacity-0', 'invisible');
+                    backToTopButton.classList.add('opacity-100', 'visible');
                 } else {
-                    backToTopButton.classList.remove('visible');
-                    backToTopButton.classList.add('invisible');
+                    backToTopButton.classList.remove('opacity-100', 'visible');
+                    backToTopButton.classList.add('opacity-0', 'invisible');
                 }
             });
             
@@ -1547,336 +1361,55 @@
                 });
             });
             
-            // Hero Slider Functionality
-            const slides = document.querySelectorAll('.slide');
-            const dots = document.querySelectorAll('.slider-dot');
-            const prevButton = document.querySelector('.slider-arrow.prev');
-            const nextButton = document.querySelector('.slider-arrow.next');
-            const sliderProgress = document.querySelector('.slider-progress');
-            const sliderCurrentEl = document.querySelector('.slider-current');
-            const sliderTotalEl = document.querySelector('.slider-total');
+            // Add pulse animation to WhatsApp button
+            const style = document.createElement('style');
+            style.textContent = `
+                .pulse-button {
+                    animation: pulse 2s infinite;
+                }
+                
+                @keyframes pulse {
+                    0% {
+                        transform: scale(1);
+                    }
+                    50% {
+                        transform: scale(1.1);
+                    }
+                    100% {
+                        transform: scale(1);
+                    }
+                }
+                
+                /* Active navigation link styles */
+                .nav-link.active::after {
+                    width: 100%;
+                }
+            `;
+            document.head.appendChild(style);
             
-            let currentSlide = 0;
-            let slideInterval;
-            const intervalTime = 5000;
+            // Set active nav link based on scroll position
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.nav-link');
             
-            // Initialize slider
-            function initSlider() {
-                // Reset all slides first
-                slides.forEach(slide => {
-                    slide.classList.remove('active', 'transitioning');
+            window.addEventListener('scroll', () => {
+                let current = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
                     
-                    // Make sure slide content is properly initialized
-                    const content = slide.querySelector('.slide-content');
-                    if (content) {
-                        content.style.opacity = '0';
-                        content.style.transform = 'translateY(20px)';
+                    if (window.scrollY >= sectionTop - 300) {
+                        current = section.getAttribute('id');
                     }
                 });
                 
-                // Reset all dots
-                dots.forEach(dot => {
-                    dot.classList.remove('active');
-                });
-                
-                // Set first slide as active
-                slides[0].classList.add('active');
-                dots[0].classList.add('active');
-                
-                // Force slide content to be visible
-                const firstSlideContent = slides[0].querySelector('.slide-content');
-                if (firstSlideContent) {
-                    setTimeout(() => {
-                        firstSlideContent.style.opacity = '1';
-                        firstSlideContent.style.transform = 'translateY(0)';
-                    }, 50);
-                }
-                
-                // Set total slides count
-                if (sliderTotalEl) {
-                    sliderTotalEl.textContent = slides.length;
-                }
-                
-                // Set current slide
-                currentSlide = 0;
-                if (sliderCurrentEl) {
-                    sliderCurrentEl.textContent = currentSlide + 1;
-                }
-                
-                // Start progress bar animation
-                startProgressBar();
-                
-                // Auto slide
-                startSlideInterval();
-            }
-            
-            // Go to specific slide
-            function goToSlide(index) {
-                // Reset progress bar
-                resetProgressBar();
-                
-                // First remove transitioning class if present
-                slides.forEach(slide => {
-                    slide.classList.remove('transitioning');
-                });
-                
-                // Add transitioning class to current slide
-                slides[currentSlide].classList.add('transitioning');
-                
-                // Remove active class from all slides and dots but keep content visible
-                slides.forEach(slide => {
-                    slide.classList.remove('active');
-                });
-                
-                dots.forEach(dot => {
-                    dot.classList.remove('active');
-                });
-                
-                // Add active class to current slide and dot
-                slides[index].classList.add('active');
-                dots[index].classList.add('active');
-                
-                // Update current slide
-                currentSlide = index;
-                
-                // Update current slide number
-                if (sliderCurrentEl) {
-                    sliderCurrentEl.textContent = currentSlide + 1;
-                }
-                
-                // Start progress bar animation
-                startProgressBar();
-                
-                // Reset interval
-                clearInterval(slideInterval);
-                startSlideInterval();
-                
-                // Remove transitioning class after animation completes
-                setTimeout(() => {
-                    slides.forEach(slide => {
-                        slide.classList.remove('transitioning');
-                    });
-                }, 1000);
-            }
-            
-            // Next slide
-            function nextSlide() {
-                let nextIndex = currentSlide + 1;
-                if (nextIndex >= slides.length) {
-                    nextIndex = 0;
-                    
-                    // Special handling for looping back to first slide
-                    ensureSlideContentVisible(nextIndex);
-                }
-                goToSlide(nextIndex);
-            }
-            
-            // Previous slide
-            function prevSlide() {
-                let prevIndex = currentSlide - 1;
-                if (prevIndex < 0) {
-                    prevIndex = slides.length - 1;
-                    
-                    // Special handling for looping back to last slide
-                    ensureSlideContentVisible(prevIndex);
-                }
-                goToSlide(prevIndex);
-            }
-            
-            // Helper function to ensure slide content is visible
-            function ensureSlideContentVisible(index) {
-                const slideContent = slides[index].querySelector('.slide-content');
-                if (!slideContent) return;
-                
-                // Reset and force slide content to be visible
-                slideContent.style.opacity = '0';
-                slideContent.style.transform = 'translateY(20px)';
-                
-                // Force reflow
-                void slideContent.offsetWidth;
-                
-                // Make slide content visible after a short delay
-                setTimeout(() => {
-                    slideContent.style.opacity = '1';
-                    slideContent.style.transform = 'translateY(0)';
-                }, 50);
-                
-                // Also ensure children are properly animated
-                const children = slideContent.children;
-                for (let i = 0; i < children.length; i++) {
-                    children[i].style.opacity = '0';
-                    children[i].style.transform = 'translateY(20px)';
-                    
-                    // Force reflow
-                    void children[i].offsetWidth;
-                    
-                    // Staggered animation
-                    setTimeout(() => {
-                        children[i].style.opacity = '1';
-                        children[i].style.transform = 'translateY(0)';
-                    }, 400 + (i * 200));
-                }
-            }
-            
-            // Start auto slide interval
-            function startSlideInterval() {
-                slideInterval = setInterval(nextSlide, intervalTime);
-            }
-            
-            // Start progress bar animation
-            function startProgressBar() {
-                if (sliderProgress) {
-                    sliderProgress.style.width = '0%';
-                    setTimeout(() => {
-                        sliderProgress.style.width = '100%';
-                        sliderProgress.style.transition = `width ${intervalTime}ms linear`;
-                    }, 10);
-                }
-            }
-            
-            // Reset progress bar
-            function resetProgressBar() {
-                if (sliderProgress) {
-                    sliderProgress.style.transition = 'none';
-                    sliderProgress.style.width = '0%';
-                }
-            }
-            
-            // Debounce function to prevent rapid clicking
-            function debounce(func, wait) {
-                let timeout;
-                return function() {
-                    const context = this, args = arguments;
-                    clearTimeout(timeout);
-                    timeout = setTimeout(() => {
-                        func.apply(context, args);
-                    }, wait);
-                };
-            }
-            
-            // Event listeners for slider
-            if (prevButton) {
-                const debouncedPrev = debounce(function(e) {
-                    e.preventDefault();
-                    prevSlide();
-                }, 300);
-                prevButton.addEventListener('click', debouncedPrev);
-            }
-            
-            if (nextButton) {
-                const debouncedNext = debounce(function(e) {
-                    e.preventDefault();
-                    nextSlide();
-                }, 300);
-                nextButton.addEventListener('click', debouncedNext);
-            }
-            
-            // Dot navigation
-            dots.forEach((dot, index) => {
-                dot.addEventListener('click', () => {
-                    goToSlide(index);
-                });
-            });
-            
-            // Keyboard navigation
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'ArrowLeft') {
-                    prevSlide();
-                } else if (e.key === 'ArrowRight') {
-                    nextSlide();
-                }
-            });
-            
-            // Touch swipe navigation
-            let touchStartX = 0;
-            let touchEndX = 0;
-            
-            const slider = document.querySelector('.slider');
-            
-            if (slider) {
-                slider.addEventListener('touchstart', (e) => {
-                    touchStartX = e.changedTouches[0].screenX;
-                }, { passive: true });
-                
-                slider.addEventListener('touchend', (e) => {
-                    touchEndX = e.changedTouches[0].screenX;
-                    handleSwipe();
-                }, { passive: true });
-            }
-            
-            function handleSwipe() {
-                const swipeDiff = touchStartX - touchEndX;
-                
-                if (Math.abs(swipeDiff) > 50) {
-                    if (swipeDiff > 0) {
-                        nextSlide();
-                    } else {
-                        prevSlide();
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${current}`) {
+                        link.classList.add('active');
                     }
-                }
-            }
-            
-            // Service category filtering
-            const categoryButtons = document.querySelectorAll('.category-btn');
-            const serviceCards = document.querySelectorAll('[data-category]');
-            
-            categoryButtons.forEach(button => {
-                button.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    
-                    // Remove active class from all buttons
-                    categoryButtons.forEach(btn => {
-                        btn.classList.remove('active');
-                        btn.classList.remove('bg-blue-50');
-                        btn.classList.remove('text-blue-700');
-                        btn.classList.add('bg-white');
-                        btn.classList.add('text-gray-700');
-                        btn.classList.add('hover:bg-blue-50');
-                        btn.classList.add('hover:text-blue-700');
-                    });
-                    
-                    // Add active class to clicked button
-                    button.classList.add('active');
-                    button.classList.add('bg-blue-50');
-                    button.classList.add('text-blue-700');
-                    button.classList.remove('bg-white');
-                    button.classList.remove('text-gray-700');
-                    button.classList.remove('hover:bg-blue-50');
-                    button.classList.remove('hover:text-blue-700');
-                    
-                    const category = button.getAttribute('data-category');
-                    
-                    // Filter services
-                    serviceCards.forEach(card => {
-                        const cardCategory = card.getAttribute('data-category');
-                        
-                        if (category === 'all' || category === cardCategory) {
-                            card.style.display = 'block';
-                            setTimeout(() => {
-                                card.style.opacity = '1';
-                                card.style.transform = 'translateY(0)';
-                            }, 10);
-                        } else {
-                            card.style.opacity = '0';
-                            card.style.transform = 'translateY(20px)';
-                            setTimeout(() => {
-                                card.style.display = 'none';
-                            }, 300);
-                        }
-                    });
                 });
             });
-            
-            // Initialize slider
-            if (slides.length > 0) {
-                initSlider();
-            }
-            
-            // Initialize "All" category as active
-            const allCategoryBtn = document.querySelector('[data-category="all"]');
-            if (allCategoryBtn) {
-                allCategoryBtn.classList.add('active');
-            }
         });
     </script>
 </body>

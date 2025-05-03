@@ -3,9 +3,13 @@
 // Initialize AOS animation library
     AOS.init({
         duration: 800,
-    once: false
-    });
-    
+        once: false,
+        offset: 100,  // Makes elements animate 100px earlier when scrolling down
+        delay: 50,    // Small delay for smoother transitions
+        mirror: true, // Enables animations when scrolling back up
+        anchorPlacement: 'top-bottom' // Trigger animation when the top of the element hits the bottom of the viewport
+});
+
 // Hero Slider Functionality
 document.addEventListener('DOMContentLoaded', function() {
     const slides = document.querySelectorAll('.slide');
@@ -127,13 +131,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Reset and start progress bar
         if (progressBar) {
-            progressBar.style.width = '0%';
-            progressBar.classList.remove('active');
+            progressBar.style.width = '0';
+            progressBar.style.transition = 'none';
             
             // Small delay to ensure CSS transition works
             setTimeout(() => {
-                progressBar.style.transitionDuration = '6s';
-                progressBar.classList.add('active');
+                progressBar.style.transition = 'width 6s linear';
+                progressBar.style.width = '100%';
             }, 50);
         }
     }
@@ -163,8 +167,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Reset progress bar
         if (progressBar) {
-            progressBar.style.width = '0%';
-            progressBar.classList.remove('active');
+            progressBar.style.width = '0';
+            progressBar.style.transition = 'none';
         }
         
         // Update current slide indicator
@@ -194,13 +198,6 @@ document.addEventListener('DOMContentLoaded', function() {
         slides[currentSlide].style.opacity = '0';
         slides[currentSlide].classList.remove('active');
         
-        // Reset all content animations in the current slide
-        const currentContent = slides[currentSlide].querySelectorAll('.slide-content > *');
-        currentContent.forEach(element => {
-            element.style.opacity = '0';
-            element.style.transform = 'translateY(20px)';
-        });
-        
         // Wait for fade out to complete then fade in new slide
         setTimeout(() => {
             // Update current slide
@@ -210,11 +207,24 @@ document.addEventListener('DOMContentLoaded', function() {
             slides[currentSlide].style.opacity = '1';
             slides[currentSlide].classList.add('active');
             
+            // Reset slide content visibility and prepare for animation
+            const slideContent = slides[currentSlide].querySelectorAll('.slide-content > *');
+            slideContent.forEach((element, i) => {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(20px)';
+                
+                // Stagger the animations
+                setTimeout(() => {
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }, 300 + (i * 200));
+            });
+            
             // Start the progress bar for the new slide
             if (progressBar) {
                 setTimeout(() => {
-                    progressBar.style.transitionDuration = '6s';
-                    progressBar.classList.add('active');
+                    progressBar.style.transition = 'width 6s linear';
+                    progressBar.style.width = '100%';
                 }, 50);
             }
             
@@ -234,36 +244,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the slider
     if (slides.length > 0) {
         initSlider();
-        
-        // Fix initial progress bar animation
-        resetProgressBar();
-        startProgressBar();
-        
-        // Add touch gesture support
-        const slider = document.querySelector('.slider');
-        if (slider) {
-            let touchStartX = 0;
-            let touchEndX = 0;
-            
-            slider.addEventListener('touchstart', function(e) {
-                touchStartX = e.changedTouches[0].screenX;
-            }, false);
-            
-            slider.addEventListener('touchend', function(e) {
-                touchEndX = e.changedTouches[0].screenX;
-                handleSwipe();
-            }, false);
-            
-            function handleSwipe() {
-                if (touchEndX < touchStartX - 50) {
-                    // Swipe left - next slide
-                    nextSlide();
-                } else if (touchEndX > touchStartX + 50) {
-                    // Swipe right - previous slide
-                    prevSlide();
-                }
-            }
-        }
     }
     
     // Services functionality
@@ -336,56 +316,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     card.addEventListener('mouseleave', function() {
                         hoverElement.style.opacity = '0';
-        });
+                    });
                 }
-    
+                
                 // Add pulsing effect to circle icon on hover
                 const iconCircle = card.querySelector('.bg-gradient-to-r');
                 if (iconCircle) {
                     card.addEventListener('mouseenter', function() {
                         iconCircle.classList.add('animate-pulse');
-        });
-        
+                    });
+                    
                     card.addEventListener('mouseleave', function() {
                         iconCircle.classList.remove('animate-pulse');
-        });
+                    });
                 }
             });
         }
     }
     
-    // Mobile menu toggle
+    // Mobile menu functionality
     const menuToggle = document.getElementById('menu-toggle');
     const mobileMenu = document.getElementById('mobile-menu');
-    const menuOpenIcon = document.getElementById('menu-open-icon');
-    const menuCloseIcon = document.getElementById('menu-close-icon');
     
     if (menuToggle && mobileMenu) {
         menuToggle.addEventListener('click', () => {
-            const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
-            
-            // Toggle menu visibility
             mobileMenu.classList.toggle('hidden');
-            mobileMenu.classList.toggle('active');
-            
-            // Update aria-expanded
-            menuToggle.setAttribute('aria-expanded', !isExpanded);
-            
-            // Toggle icons
-            menuOpenIcon.classList.toggle('hidden');
-            menuCloseIcon.classList.toggle('hidden');
-        });
-        
-        // Close menu when clicking on a link
-        const mobileMenuLinks = mobileMenu.querySelectorAll('a');
-        mobileMenuLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                mobileMenu.classList.add('hidden');
-                mobileMenu.classList.remove('active');
-                menuToggle.setAttribute('aria-expanded', 'false');
-                menuOpenIcon.classList.remove('hidden');
-                menuCloseIcon.classList.add('hidden');
-            });
         });
     }
     
@@ -411,32 +366,32 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // FAQ Accordion
+    // FAQ Accordion functionality
     const faqQuestions = document.querySelectorAll('.faq-question');
     
     faqQuestions.forEach(question => {
         question.addEventListener('click', () => {
             const answer = question.nextElementSibling;
             const icon = question.querySelector('.faq-icon');
-            const isExpanded = question.getAttribute('aria-expanded') === 'true';
             
-            // Toggle expanded state
-            question.setAttribute('aria-expanded', !isExpanded);
-            
-            // Toggle hidden attribute on answer
-            if (isExpanded) {
-                answer.hidden = true;
-            } else {
-                answer.hidden = false;
-            }
+            // Toggle active state for the question
+            question.classList.toggle('active');
             
             // Toggle rotation for icon
-            if (icon.classList.contains('rotate-0')) {
+            if (question.classList.contains('active')) {
                 icon.classList.remove('rotate-0');
                 icon.classList.add('rotate-180');
+                
+                // Show the answer
+                answer.style.maxHeight = answer.scrollHeight + "px";
+                answer.style.opacity = 1;
             } else {
                 icon.classList.remove('rotate-180');
                 icon.classList.add('rotate-0');
+                
+                // Hide the answer
+                answer.style.maxHeight = null;
+                answer.style.opacity = 0;
             }
         });
     });
@@ -476,25 +431,3 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-
-// Reset progress bar
-function resetProgressBar() {
-    if (progressBar) {
-        // Reset the progress bar
-        progressBar.style.transition = 'none';
-        progressBar.style.width = '0%';
-        progressBar.classList.remove('active');
-        
-        // Force a reflow to ensure transition works
-        void progressBar.offsetWidth;
-    }
-}
-
-// Start progress bar animation
-function startProgressBar() {
-    if (progressBar) {
-        // Set the transition duration and start the animation
-        progressBar.style.transition = 'width 5s linear';
-        progressBar.classList.add('active');
-    }
-}
