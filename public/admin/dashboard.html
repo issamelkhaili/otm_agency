@@ -3,387 +3,965 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>OTM Education - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
   <style>
+        :root {
+            --sidebar-width: 250px;
+            --header-height: 60px;
+            --primary-color: #4a90e2;
+            --secondary-color: #357abd;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+        }
+
     body {
-      font-family: 'Arial', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f5f5f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
     }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 1rem;
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: white;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
     }
-    header {
-      background-color: #4a69bd;
-      color: white;
-      padding: 1rem 0;
-    }
-    header .container {
+
+        .sidebar-header {
+            height: var(--header-height);
       display: flex;
-      justify-content: space-between;
       align-items: center;
-    }
-    h1 {
-      margin: 0;
-    }
-    .logout-btn {
-      background-color: transparent;
-      color: white;
-      border: 1px solid white;
-      padding: 0.5rem 1rem;
-      cursor: pointer;
-      border-radius: 4px;
+            padding: 0 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .sidebar-header img {
+            height: 40px;
+            margin-right: 1rem;
+        }
+
+        .nav-link {
+            padding: 0.8rem 1.5rem;
+            color: #333;
+            display: flex;
+            align-items: center;
       transition: all 0.3s ease;
     }
-    .logout-btn:hover {
-      background-color: white;
-      color: #4a69bd;
+
+        .nav-link:hover {
+            background-color: #f8f9fa;
+            color: var(--primary-color);
     }
-    .dashboard-content {
-      background-color: white;
-      border-radius: 8px;
+
+        .nav-link.active {
+            background-color: #e9ecef;
+            color: var(--primary-color);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .nav-link i {
+            width: 20px;
+            margin-right: 10px;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-left: var(--sidebar-width);
       padding: 2rem;
-      margin-top: 2rem;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    .welcome-message {
-      font-size: 1.5rem;
+            min-height: 100vh;
+        }
+
+        .header {
+            height: var(--header-height);
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
       margin-bottom: 2rem;
     }
-    .stats-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    .stat-card {
-      background-color: #f8f9fa;
-      padding: 1.5rem;
-      border-radius: 8px;
-      text-align: center;
-    }
-    .stat-card h3 {
-      margin: 0;
-      color: #4a69bd;
-      font-size: 2rem;
-    }
-    .stat-card p {
-      margin: 0.5rem 0 0;
-      color: #666;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-    th, td {
-      padding: 1rem;
-      text-align: left;
-      border-bottom: 1px solid #eee;
-    }
-    th {
-      background-color: #f8f9fa;
-      font-weight: 600;
-    }
-    .status-badge {
-      padding: 0.25rem 0.5rem;
-      border-radius: 9999px;
-      font-size: 0.875rem;
-      font-weight: 500;
-    }
-    .status-new {
-      background-color: #fef3c7;
-      color: #92400e;
-    }
-    .status-responded {
-      background-color: #dcfce7;
-      color: #166534;
-    }
-    .action-btn {
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.875rem;
-      margin-right: 0.5rem;
-    }
-    .respond-btn {
-      background-color: #4a69bd;
-      color: white;
-      border: none;
-    }
-    .respond-btn:hover {
-      background-color: #3b5998;
-    }
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      align-items: center;
-      justify-content: center;
-    }
-    .modal-content {
-      background-color: white;
-      padding: 2rem;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 500px;
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-    .close-btn {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-    }
-    .response-textarea {
-      width: 100%;
-      min-height: 150px;
-      padding: 0.5rem;
-      margin-bottom: 1rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-    }
-    .send-btn {
-      background-color: #4a69bd;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .send-btn:hover {
-      background-color: #3b5998;
+
+        /* Chat Interface Styles */
+        .chat-container {
+            display: none;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            height: calc(100vh - 200px);
+        }
+
+        .chat-sidebar {
+            width: 300px;
+            border-right: 1px solid #eee;
+            overflow-y: auto;
+        }
+
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            background: #f8f9fa;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .chat-input {
+            padding: 1rem;
+            border-top: 1px solid #eee;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            max-width: 80%;
+        }
+
+        .message.received {
+            margin-right: auto;
+        }
+
+        .message.sent {
+            margin-left: auto;
+        }
+
+        .message-content {
+            padding: 0.8rem;
+            border-radius: 10px;
+            background: #f0f2f5;
+        }
+
+        .message.sent .message-content {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .message-time {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0.3rem;
+        }
+
+        .chat-list-item {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .chat-list-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .chat-list-item.active {
+            background-color: #e9ecef;
+        }
+
+        .chat-list-item .unread {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+
+        /* Stats Cards */
+        .stats-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stats-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stats-icon.total { background: rgba(74, 144, 226, 0.1); color: var(--primary-color); }
+        .stats-icon.responded { background: rgba(40, 167, 69, 0.1); color: var(--success-color); }
+        .stats-icon.pending { background: rgba(255, 193, 7, 0.1); color: var(--warning-color); }
+
+        /* Table Styles */
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+        }
+
+        .table thead th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-new { background: rgba(74, 144, 226, 0.1); color: var(--primary-color); }
+        .status-responded { background: rgba(40, 167, 69, 0.1); color: var(--success-color); }
+        .status-pending { background: rgba(255, 193, 7, 0.1); color: var(--warning-color); }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .header {
+                padding: 0 1rem;
+            }
+        }
+
+        /* Conversation view styles */
+        .conversation {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 0.5rem;
+        }
+        .message {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+        .message.original {
+            background: #fff;
+            border: 1px solid #dee2e6;
+        }
+        .message.response {
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            margin-left: 2rem;
+        }
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            color: #6c757d;
+        }
+        .message-content {
+            white-space: pre-wrap;
+        }
+
+        /* Message preview styles */
+        .message-preview {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+        .message-preview:hover {
+            white-space: normal;
+            overflow: visible;
+            position: relative;
+            z-index: 1;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 5px;
+            border-radius: 4px;
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="container">
-      <h1>Admin Dashboard</h1>
-      <button id="logout-btn" class="logout-btn">Logout</button>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="/assets/images/logo.png" alt="OTM Education Logo">
+            <h5 class="mb-0">Admin Panel</h5>
+        </div>
+        <nav class="nav flex-column mt-3">
+            <a class="nav-link active" href="#" onclick="showDashboard()">
+                <i class="fas fa-tachometer-alt"></i>Dashboard
+            </a>
+            <a class="nav-link" href="#" onclick="showChat()">
+                <i class="fas fa-envelope"></i>Messages
+            </a>
+            <a class="nav-link" href="#" onclick="showSettings()">
+                <i class="fas fa-cog"></i>Settings
+            </a>
+            <a class="nav-link" href="#" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>Logout
+            </a>
+        </nav>
     </div>
-  </header>
-  
-  <div class="container">
-    <div class="dashboard-content">
-      <div id="welcome-message" class="welcome-message">Loading admin information...</div>
-      
-      <div class="stats-container">
-        <div class="stat-card">
-          <h3 id="totalMessages">0</h3>
-          <p>Total Messages</p>
-        </div>
-        <div class="stat-card">
-          <h3 id="respondedMessages">0</h3>
-          <p>Responded</p>
-        </div>
-        <div class="stat-card">
-          <h3 id="pendingMessages">0</h3>
-          <p>Pending</p>
-        </div>
-      </div>
 
-      <h2>Contact Messages</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Message</th>
-            <th>Date</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="messagesTable">
-          <!-- Messages will be loaded here -->
-        </tbody>
-      </table>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Dashboard View -->
+        <div id="dashboardView">
+            <div class="header">
+                <h4 class="mb-0">Dashboard Overview</h4>
+                <div class="d-flex align-items-center">
+                    <span class="me-3">Welcome, Admin</span>
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=4a90e2&color=fff" 
+                         alt="Admin" class="rounded-circle" width="40" height="40">
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <div class="stats-icon total">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h3 id="totalMessages">0</h3>
+                        <p class="text-muted mb-0">Total Messages</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <div class="stats-icon responded">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h3 id="respondedMessages">0</h3>
+                        <p class="text-muted mb-0">Responded</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <div class="stats-icon pending">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3 id="pendingMessages">0</h3>
+                        <p class="text-muted mb-0">Pending</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contacts Table -->
+            <div class="table-container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0">Recent Messages</h5>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary" onclick="refreshContacts()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <button class="btn btn-outline-success" onclick="exportContacts()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover" id="contactsTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Message</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat View -->
+        <div id="chatView" class="chat-container" style="display: none;">
+            <div class="d-flex h-100">
+                <div class="chat-sidebar">
+                    <div class="p-3 border-bottom">
+                        <input type="text" class="form-control" placeholder="Search conversations..." id="chatSearch">
+                    </div>
+                    <div id="chatList"></div>
+                </div>
+                <div class="chat-main">
+                    <div class="chat-header">
+                        <h5 class="mb-0" id="currentChatName">Select a conversation</h5>
+                    </div>
+                    <div class="chat-messages" id="chatMessages"></div>
+                    <div class="chat-input">
+                        <form id="messageForm" class="d-flex">
+                            <input type="text" class="form-control me-2" placeholder="Type your message..." id="messageInput">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
     </div>
   </div>
 
-  <!-- Response Modal -->
-  <div id="responseModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Send Response</h3>
-        <button class="close-btn" onclick="closeModal()">&times;</button>
-      </div>
-      <textarea id="responseText" class="response-textarea" placeholder="Type your response here..."></textarea>
-      <button class="send-btn" onclick="sendResponse()">Send Response</button>
+        <!-- Settings View -->
+        <div id="settingsView" style="display: none;">
+            <div class="header">
+                <h4 class="mb-0">Settings</h4>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Email Settings</h5>
+                    <form id="emailSettingsForm">
+                        <div class="mb-3">
+                            <label class="form-label">SMTP Server</label>
+                            <input type="text" class="form-control" id="smtpServer" value="ssl0.ovh.net">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">SMTP Port</label>
+                            <input type="number" class="form-control" id="smtpPort" value="587">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="emailAddress">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email Password</label>
+                            <input type="password" class="form-control" id="emailPassword">
+                        </div>
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-info" onclick="testEmailConfig()">
+                                <i class="fas fa-paper-plane"></i> Test Email Configuration
+                            </button>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Settings</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
   <script>
-    let currentContactId = null;
-    let contacts = [];
-
-    // Check if user is logged in
-    const token = localStorage.getItem('token');
+        // Check authentication
+        function checkAuth() {
+            const token = localStorage.getItem('adminToken');
     if (!token) {
       window.location.href = '/adminlogin';
     }
+        }
 
-    // Get admin information
-    async function getAdminInfo() {
-      try {
-        const response = await fetch('/api/admin/me', {
+        // Initialize DataTable
+        let contactsTable;
+        $(document).ready(function() {
+            checkAuth();
+            contactsTable = $('#contactsTable').DataTable({
+                order: [[4, 'desc']],
+                pageLength: 10,
+                language: {
+                    search: "Search messages:"
+                }
+            });
+            loadContacts();
+        });
+
+        // View Management
+        function showDashboard() {
+            document.getElementById('dashboardView').style.display = 'block';
+            document.getElementById('chatView').style.display = 'none';
+            document.getElementById('settingsView').style.display = 'none';
+            updateActiveNav('dashboard');
+        }
+
+        function showChat() {
+            document.getElementById('dashboardView').style.display = 'none';
+            document.getElementById('chatView').style.display = 'block';
+            document.getElementById('settingsView').style.display = 'none';
+            updateActiveNav('chat');
+            loadChats();
+        }
+
+        function showSettings() {
+            document.getElementById('dashboardView').style.display = 'none';
+            document.getElementById('chatView').style.display = 'none';
+            document.getElementById('settingsView').style.display = 'block';
+            updateActiveNav('settings');
+        }
+
+        function updateActiveNav(view) {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`.nav-link[onclick="show${view.charAt(0).toUpperCase() + view.slice(1)}()"]`).classList.add('active');
+        }
+
+        // Load contacts
+        async function loadContacts() {
+            try {
+                const response = await fetch('/api/admin/contacts', {
           headers: {
-            'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
           }
         });
         
         if (!response.ok) {
-          throw new Error('Not authorized');
+                    throw new Error('Failed to load contacts');
         }
         
         const data = await response.json();
-        document.getElementById('welcome-message').textContent = `Welcome, ${data.data.username}!`;
-        loadContacts(); // Load contacts after successful authentication
-      } catch (error) {
-        console.error('Auth error:', error);
-        localStorage.removeItem('token');
-        window.location.href = '/adminlogin';
-      }
-    }
+                if (!Array.isArray(data)) {
+                    console.error('Invalid data format:', data);
+                    throw new Error('Invalid data format received from server');
+                }
 
-    async function loadContacts() {
-      try {
-        const response = await fetch('/api/admin/contacts', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to load contacts');
+                // Store the decrypted contacts globally
+                window.contacts = data;
+                updateStats(data);
+                renderContacts(data);
+            } catch (error) {
+                console.error('Error loading contacts:', error);
+                alert('Failed to load contacts. Please try again.');
+            }
         }
-        
-        const data = await response.json();
-        if (data.success) {
-          contacts = data.contacts;
-          updateStats();
-          renderContacts();
+
+        // Update statistics
+        function updateStats(contacts) {
+            const total = contacts.length;
+            const responded = contacts.filter(c => c.status === 'responded').length;
+            const pending = contacts.filter(c => c.status === 'new' || c.status === 'pending').length;
+
+            document.getElementById('totalMessages').textContent = total;
+            document.getElementById('respondedMessages').textContent = responded;
+            document.getElementById('pendingMessages').textContent = pending;
         }
-      } catch (error) {
-        console.error('Error loading contacts:', error);
-        if (error.message === 'Failed to load contacts') {
-          localStorage.removeItem('token');
-          window.location.href = '/adminlogin';
+
+        // Render contacts in table
+        function renderContacts(contacts) {
+            const tbody = document.querySelector('#contactsTable tbody');
+            tbody.innerHTML = '';
+
+            contacts.forEach(contact => {
+                // Format the date properly
+                const date = new Date(contact.createdAt);
+                const formattedDate = date instanceof Date && !isNaN(date) 
+                    ? date.toLocaleString() 
+                    : 'N/A';
+
+                // Create a row with the contact data
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${contact.name || 'N/A'}</td>
+                    <td>${contact.email || 'N/A'}</td>
+                    <td>${contact.phone || 'N/A'}</td>
+                    <td>
+                        <div class="message-preview" title="${contact.message}">
+                            ${contact.message.length > 50 ? contact.message.substring(0, 50) + '...' : contact.message}
+                        </div>
+                    </td>
+                    <td>${formattedDate}</td>
+                    <td>
+                        <span class="badge ${getStatusBadgeClass(contact.status)}">
+                            ${contact.status}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-primary" onclick="viewContact('${contact.id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-success" onclick="toggleStatus('${contact.id}')">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
-      }
-    }
 
-    function updateStats() {
-      const total = contacts.length;
-      const responded = contacts.filter(c => c.status === 'responded').length;
-      const pending = contacts.filter(c => c.status === 'new').length;
-
-      document.getElementById('totalMessages').textContent = total;
-      document.getElementById('respondedMessages').textContent = responded;
-      document.getElementById('pendingMessages').textContent = pending;
-    }
-
-    function renderContacts() {
-      const tbody = document.getElementById('messagesTable');
-      tbody.innerHTML = '';
-
-      contacts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(contact => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${contact.name}</td>
-          <td>${contact.email}</td>
-          <td>${contact.message}</td>
-          <td>${new Date(contact.timestamp).toLocaleDateString()}</td>
-          <td>
-            <span class="status-badge ${contact.status === 'new' ? 'status-new' : 'status-responded'}">
-              ${contact.status}
-            </span>
-          </td>
-          <td>
-            ${contact.status === 'new' ? `
-              <button onclick="openResponseModal('${contact.id}')" class="action-btn respond-btn">
-                <i class="fas fa-reply"></i> Respond
-              </button>
-            ` : ''}
-          </td>
+        // Add this CSS for message preview
+        const style = document.createElement('style');
+        style.textContent = `
+            .message-preview {
+                max-width: 200px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                cursor: pointer;
+            }
+            .message-preview:hover {
+                white-space: normal;
+                overflow: visible;
+                position: relative;
+                z-index: 1;
+                background: white;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                padding: 5px;
+                border-radius: 4px;
+            }
         `;
-        tbody.appendChild(tr);
-      });
-    }
+        document.head.appendChild(style);
 
-    function openResponseModal(contactId) {
-      currentContactId = contactId;
-      document.getElementById('responseModal').style.display = 'flex';
-      document.getElementById('responseText').value = '';
-    }
+        // Update the viewContact function to use decrypted data
+        function viewContact(id) {
+            const contact = window.contacts.find(c => c.id === id);
+            if (!contact) return;
 
-    function closeModal() {
-      document.getElementById('responseModal').style.display = 'none';
-      currentContactId = null;
-    }
+            const modal = document.getElementById('responseModal');
+            const modalTitle = modal.querySelector('.modal-title');
+            const modalBody = modal.querySelector('.modal-body');
 
-    async function sendResponse() {
-      if (!currentContactId) return;
+            modalTitle.textContent = `Contact from ${contact.name}`;
+            
+            // Create a conversation view with decrypted data
+            let conversationHtml = `
+                <div class="conversation">
+                    <div class="message original">
+                        <div class="message-header">
+                            <strong>${contact.name}</strong>
+                            <small>${new Date(contact.createdAt).toLocaleString()}</small>
+                        </div>
+                        <div class="message-content">
+                            ${contact.message}
+                        </div>
+                    </div>
+            `;
 
-      const response = document.getElementById('responseText').value;
-      if (!response.trim()) {
-        alert('Please enter a response');
-        return;
-      }
+            // Add responses with decrypted content
+            if (contact.responses && contact.responses.length > 0) {
+                contact.responses.forEach(response => {
+                    const responseDate = new Date(response.timestamp);
+                    const formattedDate = responseDate instanceof Date && !isNaN(responseDate)
+                        ? responseDate.toLocaleString()
+                        : 'N/A';
 
-      try {
-        const result = await fetch(`/api/admin/contacts/${currentContactId}/status`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            status: 'responded',
-            response
-          })
-        });
+                    conversationHtml += `
+                        <div class="message response">
+                            <div class="message-header">
+                                <strong>${response.from}</strong>
+                                <small>${formattedDate}</small>
+                            </div>
+                            <div class="message-content">
+                                ${response.content}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
 
-        if (result.ok) {
-          closeModal();
-          loadContacts();
+            conversationHtml += `
+                </div>
+                <div class="response-form mt-3">
+                    <div class="form-group">
+                        <label for="responseText">Your Response</label>
+                        <textarea class="form-control" id="responseText" rows="4" required></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="sendResponse('${contact.id}')">
+                        Send Response
+                    </button>
+                </div>
+            `;
+
+            modalBody.innerHTML = conversationHtml;
+            new bootstrap.Modal(modal).show();
         }
+
+        // Update the sendResponse function to handle the response
+        async function sendResponse(contactId) {
+            const responseText = document.getElementById('responseText').value.trim();
+            if (!responseText) {
+                alert('Please enter a response message');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/contacts/${contactId}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    },
+                    body: JSON.stringify({
+                        status: 'responded',
+                        response: responseText
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to send response');
+                }
+
+                // Close the modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('responseModal'));
+                modal.hide();
+
+                // Refresh the contacts list
+                await loadContacts();
+
+                // Clear the response text
+                document.getElementById('responseText').value = '';
+            } catch (error) {
+                console.error('Error sending response:', error);
+                alert('Failed to send response. Please try again.');
+            }
+        }
+
+        // Chat functionality
+        let currentChatId = null;
+
+        async function loadChats() {
+            try {
+                const response = await fetch('/api/admin/contacts', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load chats');
+
+                const contacts = await response.json();
+                const chatList = document.getElementById('chatList');
+                chatList.innerHTML = '';
+
+                contacts.forEach(contact => {
+                    const div = document.createElement('div');
+                    div.className = 'chat-list-item';
+                    div.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">${contact.name}</h6>
+                                <small class="text-muted">${contact.email}</small>
+                            </div>
+                            ${contact.status === 'new' ? '<span class="unread">New</span>' : ''}
+                        </div>
+                    `;
+                    div.onclick = () => openChat(contact.id);
+                    chatList.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Error loading chats:', error);
+            }
+        }
+
+        async function openChat(contactId) {
+            currentChatId = contactId;
+            try {
+                const response = await fetch(`/api/admin/contacts/${contactId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load chat');
+
+                const contact = await response.json();
+                document.getElementById('currentChatName').textContent = contact.name;
+                
+                const messagesDiv = document.getElementById('chatMessages');
+                messagesDiv.innerHTML = '';
+
+                // Add initial message
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message received';
+                messageDiv.innerHTML = `
+                    <div class="message-content">${contact.message}</div>
+                    <div class="message-time">${new Date(contact.timestamp).toLocaleString()}</div>
+                `;
+                messagesDiv.appendChild(messageDiv);
+
+                // Add response if exists
+                if (contact.response) {
+                    const responseDiv = document.createElement('div');
+                    responseDiv.className = 'message sent';
+                    responseDiv.innerHTML = `
+                        <div class="message-content">${contact.response}</div>
+                        <div class="message-time">${new Date(contact.timestamp).toLocaleString()}</div>
+                    `;
+                    messagesDiv.appendChild(responseDiv);
+                }
+
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
       } catch (error) {
-        console.error('Error sending response:', error);
+                console.error('Error opening chat:', error);
       }
     }
 
-    // Logout function
-    document.getElementById('logout-btn').addEventListener('click', async () => {
-      try {
-        await fetch('/api/admin/logout', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        localStorage.removeItem('token');
-        window.location.href = '/adminlogin';
-      } catch (error) {
-        console.error('Logout failed', error);
-      }
-    });
+        // Message form submission
+        document.getElementById('messageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentChatId) return;
 
-    // Initialize page
-    getAdminInfo();
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            try {
+                const response = await fetch(`/api/admin/contacts/${currentChatId}/status`, {
+                    method: 'POST',
+          headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    },
+                    body: JSON.stringify({
+                        status: 'responded',
+                        response: message
+                    })
+                });
+
+                if (!response.ok) throw new Error('Failed to send message');
+
+                // Add message to chat
+                const messagesDiv = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message sent';
+                messageDiv.innerHTML = `
+                    <div class="message-content">${message}</div>
+                    <div class="message-time">${new Date().toLocaleString()}</div>
+                `;
+                messagesDiv.appendChild(messageDiv);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+                messageInput.value = '';
+                loadChats(); // Refresh chat list
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Failed to send message. Please try again.');
+            }
+        });
+
+        // Toggle contact status
+        async function toggleStatus(id) {
+            try {
+                const result = await fetch(`/api/admin/contacts/${id}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    },
+                    body: JSON.stringify({
+                        status: 'pending'
+                    })
+                });
+
+                if (!result.ok) {
+                    throw new Error('Failed to update status');
+                }
+
+                loadContacts();
+                if (currentChatId === id) {
+                    loadChats();
+                }
+            } catch (error) {
+                console.error('Error updating status:', error);
+                alert('Failed to update status. Please try again.');
+            }
+        }
+
+        // Refresh contacts
+        function refreshContacts() {
+            loadContacts();
+        }
+
+        // Export contacts
+        function exportContacts() {
+            const table = contactsTable;
+            const data = table.data().toArray();
+            const csv = [
+                ['Name', 'Email', 'Phone', 'Message', 'Date', 'Status'],
+                ...data.map(row => [
+                    row[0],
+                    row[1],
+                    row[2],
+                    row[3].replace(/<[^>]*>/g, ''),
+                    row[4],
+                    row[5].replace(/<[^>]*>/g, '')
+                ])
+            ].map(row => row.join(',')).join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `contacts-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('adminToken');
+        window.location.href = '/adminlogin';
+        });
+
+        // Add this to the JavaScript section
+        async function testEmailConfig() {
+            try {
+                const response = await fetch('/api/admin/test-email', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Test email sent successfully! Please check your inbox.');
+                } else {
+                    alert('Failed to send test email: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error testing email:', error);
+                alert('Error testing email configuration. Please check the console for details.');
+      }
+        }
+
+        // Add this function before renderContacts
+        function getStatusBadgeClass(status) {
+            switch (status) {
+                case 'new':
+                    return 'bg-primary';
+                case 'responded':
+                    return 'bg-success';
+                case 'pending':
+                    return 'bg-warning';
+                default:
+                    return 'bg-secondary';
+            }
+        }
   </script>
 </body>
 </html> 

@@ -1,125 +1,179 @@
 const fs = require('fs').promises;
 const path = require('path');
-const crypto = require('crypto');
+const { encrypt, decrypt } = require('./encryptionService');
+const { sendContactNotification, sendContactAutoResponse } = require('./emailService');
 
 const CONTACTS_FILE = path.join(__dirname, '../data/contacts.json');
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'otm-education-secure-key-32-bytes!!';
-const IV_LENGTH = 16;
 
-// Helper function to ensure key is exactly 32 bytes
-function getKey() {
-    // Use SHA-256 to get exactly 32 bytes
-    return crypto.createHash('sha256').update(ENCRYPTION_KEY).digest();
-}
-
-// Encryption functions
-function encrypt(text) {
-    if (!text) return null;
-    const iv = crypto.randomBytes(IV_LENGTH);
-    const key = getKey();
-    const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
-    let encrypted = cipher.update(text.toString());
-    encrypted = Buffer.concat([encrypted, cipher.final()]);
-    return iv.toString('hex') + ':' + encrypted.toString('hex');
-}
-
-function decrypt(text) {
-    if (!text) return null;
+// Ensure data directory exists
+async function ensureDataDirectory() {
+    const dataDir = path.dirname(CONTACTS_FILE);
     try {
-        const textParts = text.split(':');
-        const iv = Buffer.from(textParts.shift(), 'hex');
-        const encryptedText = Buffer.from(textParts.join(':'), 'hex');
-        const key = getKey();
-        const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
-        let decrypted = decipher.update(encryptedText);
-        decrypted = Buffer.concat([decrypted, decipher.final()]);
-        return decrypted.toString();
-    } catch (error) {
-        console.error('Decryption error:', error);
-        return text; // Return original text if decryption fails
+        await fs.access(dataDir);
+    } catch {
+        await fs.mkdir(dataDir, { recursive: true });
     }
 }
 
-// Contact operations
+// Initialize contacts file if it doesn't exist
+async function initializeContactsFile() {
+    try {
+        await fs.access(CONTACTS_FILE);
+    } catch {
+        await fs.writeFile(CONTACTS_FILE, JSON.stringify({ contacts: [] }));
+    }
+}
+
+// Add a new contact
 async function addContact(contact) {
+    await ensureDataDirectory();
+    await initializeContactsFile();
+
+    const data = await fs.readFile(CONTACTS_FILE, 'utf8');
+    const { contacts } = JSON.parse(data);
+    
+    const newContact = {
+        id: Date.now().toString(),
+        name: contact.name,
+        email: contact.email,
+        message: contact.message,
+        status: 'new',
+        createdAt: new Date().toISOString(),
+        responses: [],
+        messageId: contact.messageId // Store the message ID for email threading
+    };
+
+    // Encrypt sensitive data
+    newContact.email = encrypt(newContact.email);
+    newContact.message = encrypt(newContact.message);
+
+    contacts.push(newContact);
+    await fs.writeFile(CONTACTS_FILE, JSON.stringify({ contacts }, null, 2));
+
+    // Send email notifications
     try {
-        const data = await fs.readFile(CONTACTS_FILE, 'utf8');
-        const contacts = JSON.parse(data);
-        
-        // Encrypt sensitive data
-        const encryptedContact = {
-            id: Date.now().toString(),
-            timestamp: new Date().toISOString(),
-            name: encrypt(contact.name),
-            email: encrypt(contact.email),
-            phone: contact.phone ? encrypt(contact.phone) : null,
-            message: encrypt(contact.message),
-            status: 'new',
-            response: null
-        };
-        
-        contacts.contacts.push(encryptedContact);
-        await fs.writeFile(CONTACTS_FILE, JSON.stringify(contacts, null, 2));
-        return encryptedContact;
+        await sendContactNotification(newContact);
+        await sendContactAutoResponse(newContact);
     } catch (error) {
-        console.error('Error adding contact:', error);
-        throw error;
+        console.error('Error sending email notifications:', error);
     }
+
+    return newContact;
 }
 
+// Add an email response to a contact
+async function addEmailResponse(emailData) {
+    await ensureDataDirectory();
+    await initializeContactsFile();
+
+    const data = await fs.readFile(CONTACTS_FILE, 'utf8');
+    const { contacts } = JSON.parse(data);
+    
+    // Find the original contact by message ID or email
+    const originalContact = contacts.find(contact => {
+        // Check message ID first
+        if (contact.messageId === emailData.originalMessageId) {
+            return true;
+        }
+        
+        // Safely try to decrypt email
+        try {
+            const decryptedEmail = decrypt(contact.email);
+            return decryptedEmail === emailData.from;
+        } catch (error) {
+            console.log(`Error decrypting email for contact ID ${contact.id}:`, error.message);
+            return false;
+        }
+    });
+
+    if (!originalContact) {
+        console.log('No matching contact found for email response');
+        return null;
+    }
+
+    const response = {
+        id: Date.now().toString(),
+        from: emailData.from,
+        content: emailData.content,
+        timestamp: emailData.timestamp,
+        messageId: emailData.messageId
+    };
+
+    // Encrypt the response content
+    response.content = encrypt(response.content);
+
+    // Add response to the contact
+    originalContact.responses = originalContact.responses || [];
+    originalContact.responses.push(response);
+    originalContact.status = 'responded';
+
+    await fs.writeFile(CONTACTS_FILE, JSON.stringify({ contacts }, null, 2));
+    return response;
+}
+
+// Get all contacts
 async function getContacts() {
-    try {
-        const data = await fs.readFile(CONTACTS_FILE, 'utf8');
-        const contacts = JSON.parse(data);
-        
-        // Decrypt sensitive data
-        return contacts.contacts.map(contact => {
-            try {
-                return {
-                    ...contact,
-                    name: decrypt(contact.name),
-                    email: decrypt(contact.email),
-                    phone: contact.phone ? decrypt(contact.phone) : null,
-                    message: decrypt(contact.message),
-                    response: contact.response ? decrypt(contact.response) : null
-                };
-            } catch (decryptError) {
-                console.error('Error decrypting contact:', decryptError);
-                // Return the contact with original encrypted data if decryption fails
-                return contact;
-            }
-        });
-    } catch (error) {
-        console.error('Error getting contacts:', error);
-        throw error;
-    }
+    await ensureDataDirectory();
+    await initializeContactsFile();
+
+    const data = await fs.readFile(CONTACTS_FILE, 'utf8');
+    const { contacts } = JSON.parse(data);
+
+    // Decrypt sensitive data
+    return contacts.map(contact => {
+        try {
+            return {
+                ...contact,
+                email: decrypt(contact.email),
+                message: decrypt(contact.message),
+                responses: (contact.responses || []).map(response => {
+                    try {
+                        return {
+                            ...response,
+                            content: decrypt(response.content)
+                        };
+                    } catch (error) {
+                        console.log(`Error decrypting response content for contact ID ${contact.id}:`, error.message);
+                        return {
+                            ...response,
+                            content: response.content || 'Decryption error'
+                        };
+                    }
+                })
+            };
+        } catch (error) {
+            console.log(`Error decrypting contact ID ${contact.id}:`, error.message);
+            return {
+                ...contact,
+                email: contact.email || 'Decryption error',
+                message: contact.message || 'Decryption error',
+                responses: (contact.responses || [])
+            };
+        }
+    });
 }
 
-async function updateContactStatus(id, status, response = null) {
-    try {
-        const data = await fs.readFile(CONTACTS_FILE, 'utf8');
-        const contacts = JSON.parse(data);
-        
-        const contactIndex = contacts.contacts.findIndex(c => c.id === id);
-        if (contactIndex === -1) {
-            throw new Error('Contact not found');
-        }
-        
-        contacts.contacts[contactIndex].status = status;
-        if (response) {
-            contacts.contacts[contactIndex].response = encrypt(response);
-        }
-        
-        await fs.writeFile(CONTACTS_FILE, JSON.stringify(contacts, null, 2));
-        return contacts.contacts[contactIndex];
-    } catch (error) {
-        console.error('Error updating contact:', error);
-        throw error;
+// Update contact status
+async function updateContactStatus(id, status) {
+    await ensureDataDirectory();
+    await initializeContactsFile();
+
+    const data = await fs.readFile(CONTACTS_FILE, 'utf8');
+    const { contacts } = JSON.parse(data);
+    
+    const contact = contacts.find(c => c.id === id);
+    if (contact) {
+        contact.status = status;
+        await fs.writeFile(CONTACTS_FILE, JSON.stringify({ contacts }, null, 2));
+        return contact;
     }
+    
+    return null;
 }
 
 module.exports = {
     addContact,
     getContacts,
-    updateContactStatus
+    updateContactStatus,
+    addEmailResponse
 }; 

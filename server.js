@@ -3,6 +3,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const { PORT } = require('./config/config');
+const { startEmailFetching } = require('./services/emailFetchService');
 
 // Import routes
 const adminRoutes = require('./routes/admin');
@@ -61,4 +62,6 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
     console.log(`Website available at: http://localhost:${PORT}`);
+    // Start email fetching service
+    startEmailFetching();
 }); 

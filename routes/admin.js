@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../config/config');
 const { verifyAdmin } = require('../services/adminService');
 const { getContacts, updateContactStatus } = require('../services/contactService');
+const { testEmailConfig } = require('../services/emailService');
 
 // Authentication middleware
 const authenticateToken = (req, res, next) => {
@@ -77,12 +78,36 @@ router.get('/me', authenticateToken, (req, res) => {
 router.get('/contacts', authenticateToken, async (req, res) => {
     try {
         const contacts = await getContacts();
-        res.json({ success: true, contacts });
+        res.json(contacts);
     } catch (error) {
         console.error('Error getting contacts:', error);
         res.status(500).json({
             success: false,
             message: 'Error fetching contacts'
+        });
+    }
+});
+
+// Get a single contact
+router.get('/contacts/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const contacts = await getContacts();
+        const contact = contacts.find(c => c.id === id);
+        
+        if (!contact) {
+            return res.status(404).json({
+                success: false,
+                message: 'Contact not found'
+            });
+        }
+
+        res.json(contact);
+    } catch (error) {
+        console.error('Error getting contact:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching contact'
         });
     }
 });
@@ -107,6 +132,30 @@ router.post('/contacts/:id/status', authenticateToken, async (req, res) => {
 // Logout route
 router.post('/logout', authenticateToken, (req, res) => {
     res.json({ success: true, message: 'Logged out successfully' });
+});
+
+// Test email configuration
+router.post('/test-email', authenticateToken, async (req, res) => {
+    try {
+        const success = await testEmailConfig();
+        if (success) {
+            res.json({
+                success: true,
+                message: 'Test email sent successfully'
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                message: 'Failed to send test email'
+            });
+        }
+    } catch (error) {
+        console.error('Error testing email:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error testing email configuration'
+        });
+    }
 });
 
 module.exports = router; 
