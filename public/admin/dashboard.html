@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    header {
+      background-color: #4a69bd;
+      color: white;
+      padding: 1rem 0;
+    }
+    header .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    h1 {
+      margin: 0;
+    }
+    .logout-btn {
+      background-color: transparent;
+      color: white;
+      border: 1px solid white;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+    .logout-btn:hover {
+      background-color: white;
+      color: #4a69bd;
+    }
+    .dashboard-content {
+      background-color: white;
+      border-radius: 8px;
+      padding: 2rem;
+      margin-top: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .welcome-message {
+      font-size: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background-color: #f8f9fa;
+      padding: 1.5rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .stat-card h3 {
+      margin: 0;
+      color: #4a69bd;
+      font-size: 2rem;
+    }
+    .stat-card p {
+      margin: 0.5rem 0 0;
+      color: #666;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+    }
+    .status-badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    .status-new {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+    .status-responded {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+    .action-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      margin-right: 0.5rem;
+    }
+    .respond-btn {
+      background-color: #4a69bd;
+      color: white;
+      border: none;
+    }
+    .respond-btn:hover {
+      background-color: #3b5998;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    .response-textarea {
+      width: 100%;
+      min-height: 150px;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .send-btn {
+      background-color: #4a69bd;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .send-btn:hover {
+      background-color: #3b5998;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Admin Dashboard</h1>
+      <button id="logout-btn" class="logout-btn">Logout</button>
+    </div>
+  </header>
+  
+  <div class="container">
+    <div class="dashboard-content">
+      <div id="welcome-message" class="welcome-message">Loading admin information...</div>
+      
+      <div class="stats-container">
+        <div class="stat-card">
+          <h3 id="totalMessages">0</h3>
+          <p>Total Messages</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="respondedMessages">0</h3>
+          <p>Responded</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="pendingMessages">0</h3>
+          <p>Pending</p>
+        </div>
+      </div>
+
+      <h2>Contact Messages</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Message</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="messagesTable">
+          <!-- Messages will be loaded here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Response Modal -->
+  <div id="responseModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Send Response</h3>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <textarea id="responseText" class="response-textarea" placeholder="Type your response here..."></textarea>
+      <button class="send-btn" onclick="sendResponse()">Send Response</button>
+    </div>
+  </div>
+
+  <script>
+    let currentContactId = null;
+    let contacts = [];
+
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = '/adminlogin';
+    }
+
+    // Get admin information
+    async function getAdminInfo() {
+      try {
+        const response = await fetch('/api/admin/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Not authorized');
+        }
+        
+        const data = await response.json();
+        document.getElementById('welcome-message').textContent = `Welcome, ${data.data.username}!`;
+        loadContacts(); // Load contacts after successful authentication
+      } catch (error) {
+        console.error('Auth error:', error);
+        localStorage.removeItem('token');
+        window.location.href = '/adminlogin';
+      }
+    }
+
+    async function loadContacts() {
+      try {
+        const response = await fetch('/api/admin/contacts', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to load contacts');
+        }
+        
+        const data = await response.json();
+        if (data.success) {
+          contacts = data.contacts;
+          updateStats();
+          renderContacts();
+        }
+      } catch (error) {
+        console.error('Error loading contacts:', error);
+        if (error.message === 'Failed to load contacts') {
+          localStorage.removeItem('token');
+          window.location.href = '/adminlogin';
+        }
+      }
+    }
+
+    function updateStats() {
+      const total = contacts.length;
+      const responded = contacts.filter(c => c.status === 'responded').length;
+      const pending = contacts.filter(c => c.status === 'new').length;
+
+      document.getElementById('totalMessages').textContent = total;
+      document.getElementById('respondedMessages').textContent = responded;
+      document.getElementById('pendingMessages').textContent = pending;
+    }
+
+    function renderContacts() {
+      const tbody = document.getElementById('messagesTable');
+      tbody.innerHTML = '';
+
+      contacts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(contact => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${contact.name}</td>
+          <td>${contact.email}</td>
+          <td>${contact.message}</td>
+          <td>${new Date(contact.timestamp).toLocaleDateString()}</td>
+          <td>
+            <span class="status-badge ${contact.status === 'new' ? 'status-new' : 'status-responded'}">
+              ${contact.status}
+            </span>
+          </td>
+          <td>
+            ${contact.status === 'new' ? `
+              <button onclick="openResponseModal('${contact.id}')" class="action-btn respond-btn">
+                <i class="fas fa-reply"></i> Respond
+              </button>
+            ` : ''}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openResponseModal(contactId) {
+      currentContactId = contactId;
+      document.getElementById('responseModal').style.display = 'flex';
+      document.getElementById('responseText').value = '';
+    }
+
+    function closeModal() {
+      document.getElementById('responseModal').style.display = 'none';
+      currentContactId = null;
+    }
+
+    async function sendResponse() {
+      if (!currentContactId) return;
+
+      const response = document.getElementById('responseText').value;
+      if (!response.trim()) {
+        alert('Please enter a response');
+        return;
+      }
+
+      try {
+        const result = await fetch(`/api/admin/contacts/${currentContactId}/status`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            status: 'responded',
+            response
+          })
+        });
+
+        if (result.ok) {
+          closeModal();
+          loadContacts();
+        }
+      } catch (error) {
+        console.error('Error sending response:', error);
+      }
+    }
+
+    // Logout function
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      try {
+        await fetch('/api/admin/logout', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        localStorage.removeItem('token');
+        window.location.href = '/adminlogin';
+      } catch (error) {
+        console.error('Logout failed', error);
+      }
+    });
+
+    // Initialize page
+    getAdminInfo();
+  </script>
+</body>
+</html> 
