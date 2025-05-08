@@ -1,0 +1,28 @@
+Email System Diagnosis Report
+Generated: 2025-05-08T06:54:57.169Z
+==============================================
+
+STEP 1: Analyzing existing contacts in database
+Running contact analysis...
+Contact analysis completed successfully.
+
+STEP 2: Checking email server connection
+Email server check completed successfully.
+
+STEP 3: Generating final analysis
+
+POTENTIAL ISSUES DETECTED:
+- INFO: 4 Gmail users (100% of contacts)
+- MEDIUM: HTML content detected in emails
+
+RECOMMENDATIONS:
+1. Check if email encryption services are properly configured
+2. Ensure HTML content is properly processed for display
+3. Verify email credentials and server settings
+4. Make sure the renderMessage function displays email content correctly
+5. Confirm that displayContent field is being set for all responses
+
+Diagnosis complete. See the following files for detailed logs:
+- Contact analysis: /root/otm_agency/data/contact-diagnosis.log
+- Email server check: /root/otm_agency/data/email-debug.log
+- Combined report: /root/otm_agency/data/email-diagnosis-report.txt

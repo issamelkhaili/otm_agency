@@ -1,6 +1,4 @@
-// 1. Consolidate admin routes into one file
-// Replace routes/admin.js with this unified version:
-
+// routes/admin.js
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
@@ -8,9 +6,9 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs').promises;
 const path = require('path');
 const { JWT_SECRET } = require('../config/config');
-const { getContacts, updateContactStatus } = require('../services/contactService');
+const { getContacts, updateContactStatus, diagnoseContacts, mergeChatsWithSameEmail } = require('../services/contactService');
 const { testEmailConfig, sendContactResponse } = require('../services/emailService');
-const { fetchEmails } = require('../services/emailFetchService');
+const { fetchEmails, startEmailFetching, stopEmailFetching } = require('../services/emailFetchService');
 
 const ADMIN_FILE = path.join(__dirname, '../data/admin.json');
 
@@ -196,7 +194,7 @@ router.post('/contacts/:id/status', authenticateToken, async (req, res) => {
       });
     }
     
-    // Update contact status
+    // Update contact status and add admin response to chat history
     const updatedContact = await updateContactStatus(id, status, response);
     
     // If response is provided, send email response
@@ -234,16 +232,78 @@ router.post('/contacts/:id/status', authenticateToken, async (req, res) => {
 router.post('/fetch-emails', authenticateToken, async (req, res) => {
   try {
     // Trigger email fetching
+    console.log('Manual email fetch initiated');
     fetchEmails();
-    res.json({
-      success: true,
-      message: 'Email fetching initiated'
-    });
+    
+    // Set a delay to allow fetching to complete before refreshing the UI
+    setTimeout(async () => {
+      try {
+        const contacts = await getContacts();
+        
+        res.json({
+          success: true,
+          message: 'Email fetching initiated',
+          contacts // Return the latest contacts to update the UI immediately
+        });
+      } catch (err) {
+        console.error('Error fetching contacts after email fetch:', err);
+        res.json({
+          success: true,
+          message: 'Email fetching initiated, but failed to fetch updated contacts'
+        });
+      }
+    }, 3000); // 3 second delay to allow some emails to be processed
   } catch (error) {
     console.error('Error fetching emails:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching emails'
+      message: 'Error fetching emails',
+      error: error.message
+    });
+  }
+});
+
+// Restart email fetching service
+router.post('/restart-email-service', authenticateToken, async (req, res) => {
+  try {
+    // Stop existing service if running
+    stopEmailFetching();
+    
+    // Start the service again
+    const interval = req.body.interval || 1; // Default to 1 minute
+    const result = startEmailFetching(interval);
+    
+    res.json({
+      success: true,
+      message: `Email fetching service restarted with interval: ${interval} minute(s)`,
+      result
+    });
+  } catch (error) {
+    console.error('Error restarting email service:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error restarting email service',
+      error: error.message
+    });
+  }
+});
+
+// Diagnostic route for checking contacts
+router.get('/diagnose', authenticateToken, async (req, res) => {
+  try {
+    const result = await diagnoseContacts();
+    
+    res.json({
+      success: true,
+      message: 'Diagnostic check complete',
+      result
+    });
+  } catch (error) {
+    console.error('Error running diagnostics:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error running diagnostics',
+      error: error.message
     });
   }
 });
@@ -267,7 +327,8 @@ router.post('/test-email', authenticateToken, async (req, res) => {
     console.error('Error testing email:', error);
     res.status(500).json({
       success: false,
-      message: 'Error testing email configuration'
+      message: 'Error testing email configuration',
+      error: error.message
     });
   }
 });
@@ -279,6 +340,108 @@ router.post('/logout', (req, res) => {
     success: true, 
     message: 'Logged out successfully' 
   });
+});
+
+// Merge chats with the same email address
+router.post('/merge-chats', authenticateToken, async (req, res) => {
+  try {
+    const result = await mergeChatsWithSameEmail();
+    
+    if (result.success) {
+      // Return the updated contacts list
+      const contacts = await getContacts();
+      
+      res.json({
+        success: true,
+        message: result.message,
+        contacts
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: result.message
+      });
+    }
+  } catch (error) {
+    console.error('Error merging chats:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error merging chats: ' + error.message
+    });
+  }
+});
+
+// Delete a contact/conversation
+router.delete('/contacts/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Get contacts to find the current one
+    const contacts = await getContacts();
+    const contactIndex = contacts.findIndex(c => c.id === id);
+    
+    if (contactIndex === -1) {
+      return res.status(404).json({
+        success: false, 
+        message: 'Contact not found'
+      });
+    }
+    
+    // Remove the contact from the array
+    contacts.splice(contactIndex, 1);
+    
+    // Save the updated contacts
+    const contactsFile = path.join(__dirname, '../data/contacts.json');
+    await fs.writeFile(contactsFile, JSON.stringify(contacts, null, 2));
+    
+    res.json({ 
+      success: true, 
+      message: 'Contact deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting contact:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting contact: ' + error.message
+    });
+  }
+});
+
+// Delete all messages from a conversation (keeping the initial message)
+router.delete('/contacts/:id/messages', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Get contacts to find the current one
+    const contacts = await getContacts();
+    const contactIndex = contacts.findIndex(c => c.id === id);
+    
+    if (contactIndex === -1) {
+      return res.status(404).json({
+        success: false, 
+        message: 'Contact not found'
+      });
+    }
+    
+    // Clear responses but keep the initial message
+    contacts[contactIndex].responses = [];
+    
+    // Save the updated contacts
+    const contactsFile = path.join(__dirname, '../data/contacts.json');
+    await fs.writeFile(contactsFile, JSON.stringify(contacts, null, 2));
+    
+    res.json({ 
+      success: true, 
+      contact: contacts[contactIndex],
+      message: 'Messages deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting messages:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting messages: ' + error.message
+    });
+  }
 });
 
 module.exports = router;

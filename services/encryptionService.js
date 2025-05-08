@@ -12,21 +12,35 @@ function getKey() {
 // Encryption functions
 function encrypt(text) {
     if (!text) return null;
-    const iv = crypto.randomBytes(IV_LENGTH);
-    const key = getKey();
-    const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
-    let encrypted = cipher.update(text.toString());
-    encrypted = Buffer.concat([encrypted, cipher.final()]);
-    return iv.toString('hex') + ':' + encrypted.toString('hex');
+    
+    try {
+        // Check if the text is already encrypted (has the format of iv:encryptedData)
+        if (isEncrypted(text)) {
+            console.log('Text appears to be already encrypted, skipping encryption');
+            return text;
+        }
+        
+        const iv = crypto.randomBytes(IV_LENGTH);
+        const key = getKey();
+        const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+        let encrypted = cipher.update(text.toString());
+        encrypted = Buffer.concat([encrypted, cipher.final()]);
+        return iv.toString('hex') + ':' + encrypted.toString('hex');
+    } catch (error) {
+        console.error('Encryption error:', error);
+        // Return original text if encryption fails
+        return text;
+    }
 }
 
 function decrypt(text) {
     if (!text) return null;
+    
     try {
         // Check if text has the expected format (iv:encryptedData)
-        if (!text.includes(':')) {
-            console.log('Invalid encrypted format, missing separator:', text);
-            return text; // Return original text if format is invalid
+        if (!isEncrypted(text)) {
+            console.log('Text is not encrypted, returning as is:', text);
+            return text; // Return original text if not encrypted
         }
         
         const textParts = text.split(':');
@@ -56,7 +70,22 @@ function decrypt(text) {
     }
 }
 
+// Helper function to check if text is already encrypted
+function isEncrypted(text) {
+    if (typeof text !== 'string') return false;
+    
+    // Check if the text matches the pattern of hex:hex
+    const parts = text.split(':');
+    if (parts.length < 2) return false;
+    
+    const possibleIv = parts[0];
+    
+    // IV should be a hex string of the correct length (IV_LENGTH * 2 because hex)
+    return /^[0-9a-f]+$/i.test(possibleIv) && possibleIv.length === IV_LENGTH * 2;
+}
+
 module.exports = {
     encrypt,
-    decrypt
-}; 
+    decrypt,
+    isEncrypted
+};

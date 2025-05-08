@@ -22,7 +22,9 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: EMAIL_USER,
     pass: EMAIL_PASSWORD
-  }
+  },
+  debug: true, // Enable debug logs
+  logger: true  // Enable transport logs
 });
 
 // Validate transporter configuration on startup
@@ -51,6 +53,8 @@ async function testEmailConfig() {
       return false;
     }
 
+    console.log('Attempting to send test email to:', ADMIN_EMAIL);
+    
     const info = await transporter.sendMail({
       from: `"OTM Education" <${EMAIL_USER}>`,
       to: ADMIN_EMAIL,
@@ -60,6 +64,7 @@ async function testEmailConfig() {
     });
     
     console.log('Test email sent successfully:', info.messageId);
+    console.log('Email info:', info);
     return true;
   } catch (error) {
     console.error('Test email failed:', error);
@@ -74,6 +79,8 @@ async function sendEmail(to, subject, text, html, options = {}) {
     throw new Error('Email service not configured');
   }
 
+  console.log(`Preparing to send email to ${to} with subject: ${subject}`);
+  
   const messageId = options.messageId || generateMessageId();
   const inReplyTo = options.inReplyTo || null;
   const references = options.references || null;
@@ -92,8 +99,15 @@ async function sendEmail(to, subject, text, html, options = {}) {
   if (references) mailOptions.references = references;
 
   try {
+    console.log('Sending email with options:', JSON.stringify({
+      to: mailOptions.to,
+      subject: mailOptions.subject,
+      messageId: mailOptions.messageId
+    }));
+    
     const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent:', info.messageId);
+    console.log('Email sent successfully:', info.messageId);
+    console.log('Email delivery info:', info);
     return info;
   } catch (error) {
     console.error('Error sending email:', error);
@@ -103,6 +117,8 @@ async function sendEmail(to, subject, text, html, options = {}) {
 
 // Send a notification when a new contact form is submitted
 async function sendContactNotification(contact) {
+  console.log(`Sending admin notification for contact from: ${contact.name} <${contact.email}>`);
+  
   const subject = 'New Contact Form Submission';
   const text = `
     New contact form submission received:
@@ -128,6 +144,8 @@ async function sendContactNotification(contact) {
 
 // Send an auto-response to the user
 async function sendContactAutoResponse(contact) {
+  console.log(`Sending auto-response to: ${contact.email}`);
+  
   const messageId = generateMessageId();
   const subject = 'Thank you for contacting OTM Education';
   const text = `
@@ -162,6 +180,8 @@ async function sendContactAutoResponse(contact) {
 
 // Send a response to a contact
 async function sendContactResponse(contact, response) {
+  console.log(`Sending response to contact: ${contact.name} <${contact.email}>`);
+  
   const messageId = generateMessageId();
   const subject = `Re: ${contact.subject || 'Your message to OTM Education'}`;
   const text = `

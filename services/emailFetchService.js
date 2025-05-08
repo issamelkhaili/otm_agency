@@ -26,15 +26,25 @@ function extractEmailAddress(email) {
   if (!email) return null;
   
   // Handle different email formats
-  if (typeof email === 'object' && email.text) {
-    email = email.text;
+  if (typeof email === 'object') {
+    if (email.text) {
+      email = email.text;
+    } else if (email.value && email.value.length > 0 && email.value[0].address) {
+      email = email.value[0].address;
+    }
   }
   
   const match = String(email).match(/<(.+)>/);
-  return match ? match[1] : String(email);
+  return (match ? match[1] : String(email)).trim().toLowerCase();
 }
 
-function extractOriginalMessageId(references) {
+function extractOriginalMessageId(references, inReplyTo) {
+  // First check inReplyTo which is more likely to be the direct parent
+  if (inReplyTo) {
+    return Array.isArray(inReplyTo) ? inReplyTo[0] : String(inReplyTo);
+  }
+  
+  // Then check references
   if (!references) return null;
   
   // If references is an array, convert to string
@@ -44,40 +54,149 @@ function extractOriginalMessageId(references) {
   
   // Parse references string to extract message IDs
   const refs = String(references).split(/\s+/);
-  return refs.length > 0 ? refs[refs.length - 1] : null;
+  return refs.length > 0 ? refs[0] : null; // First reference is usually the original message
+}
+
+/**
+ * Parses a Gmail-style reply email to extract just the new content
+ */
+function parseEmailReply(emailContent) {
+  if (!emailContent) return emailContent;
+
+  // Step 1: Split by the common Gmail reply markers
+  const markers = [
+    /On [A-Za-z]{3}, [A-Za-z]{3} \d+, \d{4}(,| at) \d+:\d+ (AM|PM)/i, // "On Thu, May 8, 2025 at 8:46 AM"
+    /On [A-Za-z]{3}, [A-Za-z]{3} \d+, \d{4}, \d+:\d+ (AM|PM)/i,        // "On Thu, May 8, 2025, 8:46 AM"
+    /On \d{4}-\d{2}-\d{2} \d+:\d+/i,                                   // "On 2025-05-08 8:46"
+    /On \d{1,2}\/\d{1,2}\/\d{2,4} \d+:\d+/i,                           // "On 5/8/25 8:46"
+    /On \d{1,2}\/\d{1,2}\/\d{2,4}, .* wrote:/i,                        // "On 5/8/25, OTM wrote:"
+    /On .* wrote:/i,                                                   // "On Thursday, OTM wrote:"
+    /^>.*/m                                                            // Standard email quote character
+  ];
+
+  // Try each marker pattern to find the original message
+  for (const marker of markers) {
+    const parts = emailContent.split(marker);
+    if (parts.length > 1) {
+      // Return just the part before the marker, trimmed
+      return parts[0].trim();
+    }
+  }
+
+  // If no markers found, try line-by-line analysis
+  const lines = emailContent.split('\n');
+  const newLines = [];
+  let quoteStarted = false;
+
+  for (const line of lines) {
+    // Check for quote indicators
+    if (line.trim().startsWith('>') || line.includes('wrote:') || line.includes(' wrote:')) {
+      quoteStarted = true;
+      continue;
+    }
+
+    // If we haven't hit a quote section yet, include the line
+    if (!quoteStarted) {
+      newLines.push(line);
+    }
+  }
+
+  // If we found quoted content, return just the new content
+  if (quoteStarted && newLines.length > 0) {
+    return newLines.join('\n').trim();
+  }
+
+  // Last resort: return the original content
+  return emailContent.trim();
 }
 
 async function processEmail(mail) {
   try {
     const parsed = await simpleParser(mail);
     
+    // Log full headers for debugging
+    console.log('Email headers:', JSON.stringify({
+      messageId: parsed.messageId,
+      references: parsed.references,
+      inReplyTo: parsed.inReplyTo,
+      subject: parsed.subject
+    }));
+    
     // Extract email data
     const from = extractEmailAddress(parsed.from);
     const subject = parsed.subject || 'No Subject';
-    const content = parsed.text || parsed.html || 'No Content';
+    
+    // IMPORTANT: We previously prioritized HTML over text, which causes issues
+    // Let's use both formats but process HTML properly
+    let content = '';
+    let rawHtml = null;
+    
+    if (parsed.html) {
+      // Store raw HTML for advanced display
+      rawHtml = parsed.html;
+      
+      // Also create a simplified text version for backup
+      // Simple HTML stripping - basic version
+      content = parsed.html
+        .replace(/<div>(.*?)<\/div>/gi, '$1\n')
+        .replace(/<p>(.*?)<\/p>/gi, '$1\n\n')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<[^>]*>?/gm, '');
+      
+      // Clean up excessive whitespace
+      content = content
+        .replace(/\n\s*\n\s*\n/g, '\n\n')
+        .trim();
+      
+      console.log(`HTML content detected, created plaintext version (length: ${content.length})`);
+    } else if (parsed.text) {
+      content = parsed.text;
+    } else {
+      content = 'No Content';
+    }
+
+    // Parse the content to extract just the user's new message (if it's a reply)
+    if (parsed.inReplyTo || parsed.references) {
+      console.log("Detected reply email, parsing to extract just the user's new message");
+      const parsedContent = parseEmailReply(content);
+      console.log(`Original content length: ${content.length}, Parsed content length: ${parsedContent.length}`);
+      content = parsedContent;
+    }
+    
     const messageId = parsed.messageId;
-    const references = parsed.references || parsed.inReplyTo;
-    const originalMessageId = extractOriginalMessageId(references);
+    const originalMessageId = extractOriginalMessageId(parsed.references, parsed.inReplyTo);
     const date = parsed.date || new Date();
 
     console.log(`Processing email "${subject}" from ${from}`);
+    console.log(`Message ID: ${messageId}, Original Message ID: ${originalMessageId}`);
     
     if (!from) {
       console.error('Email missing sender address, skipping');
       return;
     }
 
+    // Check if this is our own message (sent by the system)
+    if (from === imapConfig.user.toLowerCase()) {
+      console.log('Skipping our own outgoing message');
+      return;
+    }
+
     // Add the email response to the contact system
-    await addEmailResponse({
+    const result = await addEmailResponse({
       from,
       subject,
       content,
+      rawHtml, // Add raw HTML for better display
       messageId,
       originalMessageId,
       timestamp: date.toISOString()
     });
 
-    console.log(`Successfully processed email from ${from}`);
+    if (result) {
+      console.log(`Successfully processed email from ${from} and added to contact ID: ${result.contactId}`);
+    } else {
+      console.log(`Created new contact from email from ${from}`);
+    }
   } catch (error) {
     console.error('Error processing email:', error);
   }
@@ -89,6 +208,7 @@ function fetchEmails() {
     return;
   }
 
+  console.log('Starting email fetch operation...');
   const imap = new Imap(imapConfig);
 
   imap.once('ready', () => {
@@ -101,8 +221,12 @@ function fetchEmails() {
         return;
       }
 
-      // Search for unread emails
-      imap.search(['UNSEEN'], (err, results) => {
+      console.log('INBOX opened successfully');
+      
+      // Search for ALL unseen messages to make sure we get everything
+      const searchCriteria = ['UNSEEN'];
+      
+      imap.search(searchCriteria, (err, results) => {
         if (err) {
           console.error('Error searching emails:', err);
           imap.end();
@@ -116,7 +240,10 @@ function fetchEmails() {
         }
 
         console.log(`Found ${results.length} new emails`);
-        const fetch = imap.fetch(results, { bodies: '', markSeen: true });
+        const fetch = imap.fetch(results, { 
+          bodies: '',
+          markSeen: true // Mark as seen after fetching
+        });
         
         fetch.on('message', (msg, seqno) => {
           console.log(`Processing message #${seqno}`);
@@ -128,12 +255,17 @@ function fetchEmails() {
             });
             
             stream.once('end', () => {
+              console.log(`Message #${seqno} body received, processing...`);
               processEmail(buffer);
             });
           });
           
           msg.once('attributes', (attrs) => {
-            console.log(`Message attributes:`, attrs.uid);
+            console.log(`Message #${seqno} attributes:`, attrs.uid);
+          });
+          
+          msg.once('end', () => {
+            console.log(`Message #${seqno} processing complete`);
           });
         });
 
@@ -157,10 +289,15 @@ function fetchEmails() {
     console.log('IMAP connection ended');
   });
 
-  imap.connect();
+  // Connect with error handling
+  try {
+    imap.connect();
+  } catch (err) {
+    console.error('Error connecting to IMAP server:', err);
+  }
 }
 
-function startEmailFetching(interval = 5) {
+function startEmailFetching(interval = 1) { // Check every minute for faster response
   if (emailFetchingActive) {
     console.log('Email fetching already active');
     return;
