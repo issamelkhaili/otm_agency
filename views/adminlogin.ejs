@@ -3,105 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login</title>
+    <title>OTM Education - Admin Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f5f5f5;
-        }
-        .login-container {
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-        }
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #333;
-        }
-        input {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 0.75rem;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        .error {
-            color: red;
-            margin-top: 1rem;
-            display: none;
+        .bg-image {
+            background-image: url('/assets/images/campus-france.jpg');
+            background-size: cover;
+            background-position: center;
         }
     </style>
 </head>
-<body>
-    <div class="login-container">
-        <h1>Admin Login</h1>
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" required autocomplete="username">
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+    <div class="w-full max-w-4xl flex rounded-lg shadow-lg overflow-hidden">
+        <!-- Left side with background image -->
+        <div class="hidden md:block md:w-1/2 bg-image relative">
+            <div class="absolute inset-0 bg-blue-900 bg-opacity-80 flex flex-col items-center justify-center px-8 text-white">
+                <div class="text-center">
+                    <h1 class="text-3xl font-bold mb-6">OTM Education</h1>
+                    <p class="text-xl mb-4">Admin Portal</p>
+                    <p class="text-sm opacity-80">Manage your international student services with ease.</p>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required autocomplete="current-password">
+        </div>
+        
+        <!-- Right side with login form -->
+        <div class="w-full md:w-1/2 bg-white p-8 lg:p-12">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-800">Admin Login</h2>
+                <p class="text-gray-600 mt-2">Sign in to access the dashboard</p>
             </div>
-            <button type="submit">Login</button>
-            <div id="error" class="error"></div>
-        </form>
+            
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user text-gray-400"></i>
+                        </div>
+                        <input type="text" id="username" name="username" required
+                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter your username" autocomplete="username">
+                    </div>
+                </div>
+                
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400"></i>
+                        </div>
+                        <input type="password" id="password" name="password" required
+                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter your password" autocomplete="current-password">
+                    </div>
+                </div>
+                
+                <div>
+                    <button type="submit" 
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                        <span id="login-text">Sign In</span>
+                        <span id="login-spinner" class="hidden">
+                            <i class="fas fa-spinner fa-spin ml-2"></i>
+                        </span>
+                    </button>
+                </div>
+                
+                <div id="error-message" class="p-3 bg-red-100 text-red-700 rounded-md hidden">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span id="error-text">Invalid credentials</span>
+                </div>
+            </form>
+            
+            <div class="mt-8 text-center">
+                <a href="/" class="text-sm text-blue-600 hover:text-blue-800 transition-colors">
+                    <i class="fas fa-arrow-left mr-1"></i> Back to Website
+                </a>
+            </div>
+        </div>
     </div>
 
     <script>
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // Show spinner and disable button
+            const loginText = document.getElementById('login-text');
+            const loginSpinner = document.getElementById('login-spinner');
+            const errorMessage = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            const submitButton = document.querySelector('button[type="submit"]');
+            
+            loginText.textContent = 'Signing In...';
+            loginSpinner.classList.remove('hidden');
+            errorMessage.classList.add('hidden');
+            submitButton.disabled = true;
+            
+            // Get form data
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('error');
-
+            
             try {
                 const response = await fetch('/api/admin/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify({ username, password }),
+                    credentials: 'include' // Important for cookies
                 });
-
+                
                 const data = await response.json();
-
+                
                 if (data.success) {
+                    // Store token in localStorage for API requests
+                    if (data.token) {
+                        localStorage.setItem('adminToken', data.token);
+                    }
+                    
+                    // Redirect to admin dashboard
                     window.location.href = '/admin/dashboard';
                 } else {
-                    errorDiv.textContent = data.message || 'Login failed';
-                    errorDiv.style.display = 'block';
+                    // Show error message
+                    errorText.textContent = data.message || 'Login failed';
+                    errorMessage.classList.remove('hidden');
+                    
+                    // Reset button
+                    loginText.textContent = 'Sign In';
+                    loginSpinner.classList.add('hidden');
+                    submitButton.disabled = false;
                 }
             } catch (error) {
-                errorDiv.textContent = 'An error occurred. Please try again.';
-                errorDiv.style.display = 'block';
+                console.error('Login error:', error);
+                
+                // Show error message
+                errorText.textContent = 'An error occurred. Please try again.';
+                errorMessage.classList.remove('hidden');
+                
+                // Reset button
+                loginText.textContent = 'Sign In';
+                loginSpinner.classList.add('hidden');
+                submitButton.disabled = false;
             }
         });
     </script>
 </body>
-</html> 
+</html>

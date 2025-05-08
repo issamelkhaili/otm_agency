@@ -1,15 +1,20 @@
+// routes/admin.js
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../config/config');
 const { verifyAdmin } = require('../services/adminService');
 const { getContacts, updateContactStatus } = require('../services/contactService');
-const { testEmailConfig } = require('../services/emailService');
+const { testEmailConfig, sendContactResponse } = require('../services/emailService');
+const { fetchEmails } = require('../services/emailFetchService');
 
 // Authentication middleware
 const authenticateToken = (req, res, next) => {
+    // Check for token in Authorization header or in cookies
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    const tokenFromHeader = authHeader && authHeader.split(' ')[1];
+    const tokenFromCookie = req.cookies && req.cookies.token;
+    const token = tokenFromHeader || tokenFromCookie;
 
     if (!token) {
         return res.status(401).json({
@@ -22,7 +27,7 @@ const authenticateToken = (req, res, next) => {
         if (err) {
             return res.status(403).json({
                 success: false,
-                message: 'Invalid token'
+                message: 'Invalid or expired token'
             });
         }
         req.user = user;
@@ -34,6 +39,14 @@ const authenticateToken = (req, res, next) => {
 router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
+        
+        if (!username || !password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide username and password'
+            });
+        }
+        
         const isValid = await verifyAdmin(username, password);
 
         if (!isValid) {
@@ -45,15 +58,23 @@ router.post('/login', async (req, res) => {
 
         // Create session token
         const token = jwt.sign(
-            { username },
+            { username, role: 'admin' },
             JWT_SECRET,
             { expiresIn: '24h' }
         );
 
+        // Set token in cookie and return in response
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        });
+
         res.json({
             success: true,
             token,
-            message: 'Login successful'
+            message: 'Login successful',
+            user: { username }
         });
     } catch (error) {
         console.error('Login error:', error);
@@ -62,6 +83,15 @@ router.post('/login', async (req, res) => {
             message: 'Server error'
         });
     }
+});
+
+// Check authentication status
+router.get('/check-auth', authenticateToken, (req, res) => {
+    res.json({
+        success: true,
+        authenticated: true,
+        user: { username: req.user.username }
+    });
 });
 
 // Get admin info
@@ -78,7 +108,10 @@ router.get('/me', authenticateToken, (req, res) => {
 router.get('/contacts', authenticateToken, async (req, res) => {
     try {
         const contacts = await getContacts();
-        res.json(contacts);
+        res.json({
+            success: true,
+            contacts
+        });
     } catch (error) {
         console.error('Error getting contacts:', error);
         res.status(500).json({
@@ -102,7 +135,10 @@ router.get('/contacts/:id', authenticateToken, async (req, res) => {
             });
         }
 
-        res.json(contact);
+        res.json({
+            success: true,
+            contact
+        });
     } catch (error) {
         console.error('Error getting contact:', error);
         res.status(500).json({
@@ -112,14 +148,42 @@ router.get('/contacts/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// Update contact status
+// Update contact status and optionally send a response
 router.post('/contacts/:id/status', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
         const { status, response } = req.body;
         
+        // Get contacts to find the current one
+        const contacts = await getContacts();
+        const contact = contacts.find(c => c.id === id);
+        
+        if (!contact) {
+            return res.status(404).json({
+                success: false, 
+                message: 'Contact not found'
+            });
+        }
+        
+        // Update contact status
         const updatedContact = await updateContactStatus(id, status, response);
-        res.json({ success: true, contact: updatedContact });
+        
+        // If response is provided, send email response
+        if (response && response.trim() !== '') {
+            try {
+                await sendContactResponse(contact, response);
+                console.log(`Email response sent to ${contact.email}`);
+            } catch (emailError) {
+                console.error('Failed to send email response:', emailError);
+                // Don't fail the whole request if just the email fails
+            }
+        }
+        
+        res.json({ 
+            success: true, 
+            contact: updatedContact,
+            message: response ? 'Status updated and response sent' : 'Status updated' 
+        });
     } catch (error) {
         console.error('Error updating contact:', error);
         res.status(500).json({
@@ -129,9 +193,22 @@ router.post('/contacts/:id/status', authenticateToken, async (req, res) => {
     }
 });
 
-// Logout route
-router.post('/logout', authenticateToken, (req, res) => {
-    res.json({ success: true, message: 'Logged out successfully' });
+// Manually trigger email fetching
+router.post('/fetch-emails', authenticateToken, async (req, res) => {
+    try {
+        // Trigger email fetching
+        fetchEmails();
+        res.json({
+            success: true,
+            message: 'Email fetching initiated'
+        });
+    } catch (error) {
+        console.error('Error fetching emails:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching emails'
+        });
+    }
 });
 
 // Test email configuration
@@ -158,4 +235,18 @@ router.post('/test-email', authenticateToken, async (req, res) => {
     }
 });
 
-module.exports = router; 
+// Logout route
+router.post('/logout', (req, res) => {
+    res.clearCookie('token');
+    res.json({ 
+        success: true, 
+        message: 'Logged out successfully' 
+    });
+});
+
+// Admin dashboard route (serve HTML)
+router.get('/dashboard', (req, res) => {
+    res.render('dashboard');
+});
+
+module.exports = router;
