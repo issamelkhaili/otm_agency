@@ -1,4 +1,5 @@
-// server.js
+// Updated server.js with better error handling and configuration
+
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -7,7 +8,7 @@ const { PORT } = require('./config/config');
 const { startEmailFetching } = require('./services/emailFetchService');
 const { validateEmailConfig } = require('./services/emailService');
 
-// Import routes
+// Import routes - use unified admin routes
 const adminRoutes = require('./routes/admin');
 const contactRoutes = require('./routes/contact');
 
@@ -16,7 +17,7 @@ const app = express();
 
 // CORS configuration - MUST BE BEFORE OTHER MIDDLEWARE
 app.use(cors({
-    origin: '*', // Allow all origins in development
+    origin: process.env.NODE_ENV === 'production' ? process.env.ALLOWED_ORIGIN : '*', 
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -87,7 +88,8 @@ async function startServer() {
                 startEmailFetching();
             } else {
                 console.warn('Email configuration is invalid. Email fetching service will not start.');
-                console.warn('Please check your .env file and ensure EMAIL_USER and EMAIL_PASSWORD are properly set.');
+                console.warn('The website will function normally but email features will be disabled.');
+                console.warn('To enable email features, please set EMAIL_USER and EMAIL_PASSWORD in your .env file.');
             }
         });
     } catch (error) {
